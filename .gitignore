@@ -1,7 +1,8 @@
 
-
+Manifest.toml
+scripts_test/
 
 *.npy
 *.h5
 
-
+problems
