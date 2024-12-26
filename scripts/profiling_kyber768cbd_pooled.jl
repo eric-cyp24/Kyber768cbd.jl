@@ -1,5 +1,5 @@
 using Dates:Time,Second
-using Mmap, HDF5
+using HDF5
 using StatsBase:sample
 using TemplateAttack
 using TemplateAttack:loaddata
@@ -7,51 +7,79 @@ using TemplateAttack:loaddata
 ### Parameters ########
 include("Parameters.jl")
 ntraces   = 192000
-trlen     = 10920
+trlen     = 10440
 ntest     = 500
-TracesDIR = scratchTracesDIR
+TracesDIR = TracesDIROs
 ###
 
-Dir = DirHPFnew
+Dir = DirHPFOs
 POIe_left, POIe_right = 40, 80
 nicv_th, buf_nicv_th  = 0.001, 0.004
 #######################
 
 
 #srcDir(dev) = joinpath(TracesDIR, Dir[dev],"lanczos2_25/")
-srcDir(dev) = joinpath(ext1TracesDIR, Dir[dev],"lanczos2_25/")
+srcDir(dev) = joinpath(TracesDIROs, Dir[dev],"lanczos2_25/")
 pooledDir(devices)=joinpath("SOCKET_HPF/Pooled/Pooled_HPF/", join(sort(String.(devices)),"_")*"/")
 
-function Kyber768_profiling(INDIR, OUTDIR, Traces, X, Y, S, Buf; nvalid=nothing, 
-                            POIe_left=80, POIe_right=20, nicv_th=0.001, buf_nicv_th=0.004)
-    numofcomponents, priors = 3, :uniform
-    fn = "Templates_X_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for X: $outfile")
-    Templates_X = runprofiling( X, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile, nvalid);
+function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothing, Buf=nothing, XY=nothing,
+                            POIe_left=0, POIe_right=0, nicv_th=0.001, buf_nicv_th=0.004, nvalid=nothing)
+    if !isnothing(X)
+        numofcomponents, priors = 3, :uniform
+        fn = "Templates_X_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for X: $outfile")
+        if !isfile(outfile)
+            Templates_X = runprofiling( X, Traces; nicv_th, POIe_left, POIe_right,
+                                                   priors, numofcomponents, outfile, nvalid);
+        end
+    end
 
-    numofcomponents, priors = 3, :uniform
-    fn = "Templates_Y_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for Y: $outfile")
-    Templates_Y = runprofiling( Y, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile, nvalid);
+    if !isnothing(Y)
+        numofcomponents, priors = 3, :uniform
+        fn = "Templates_Y_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for Y: $outfile")
+        if !isfile(outfile)
+            Templates_Y = runprofiling( Y, Traces; nicv_th, POIe_left, POIe_right,
+                                                   priors, numofcomponents, outfile, nvalid);
+        end
+    end
 
-    numofcomponents, priors = 4, :binomial
-    fn = "Templates_S_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for S: $outfile")
-    Templates_S = runprofiling( S, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile, nvalid);
+    if !isnothing(S)
+        numofcomponents, priors = 4, :binomial
+        fn = "Templates_S_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for S: $outfile")
+        if !isfile(outfile)
+            Templates_S = runprofiling( S, Traces; nicv_th, POIe_left, POIe_right,
+                                                   priors, numofcomponents, outfile, nvalid);
+        end
+    end
 
-    numofcomponents, priors = 16, :uniform
-    fn = "Templates_Buf_proc_nicv$(string(buf_nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for Buf: $outfile")
-    Templates_Buf = runprofiling( Buf, Traces; nicv_th=buf_nicv_th, POIe_left, POIe_right, 
-                                               priors, numofcomponents, outfile, nvalid);
+    if !isnothing(Buf)
+        numofcomponents, priors = 16, :uniform
+        fn = "Templates_Buf_proc_nicv$(string(buf_nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for Buf: $outfile")
+        if !isfile(outfile)
+            Templates_Buf = runprofiling( Buf, Traces; nicv_th=buf_nicv_th, POIe_left, POIe_right,
+                                                       priors, numofcomponents, outfile, nvalid);
+        end
+    end
+
+    if !isnothing(XY)
+        numofcomponents, priors = 15, :uniform
+        fn = "Templates_XY_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for XY: $outfile")
+        if !isfile(outfile)
+            Templates_XY = runprofiling( XY, Traces; nicv_th, POIe_left, POIe_right,
+                                                     priors, numofcomponents, outfile, nvalid);
+        end
+    end
 end
+
 
 function pooledTraces(MixDIR, devices, ntest=500)
     isdir(MixDIR) || mkpath(joinpath(MixDIR,"Templates/")) # create Dir if not exist
@@ -62,11 +90,13 @@ function pooledTraces(MixDIR, devices, ntest=500)
     XFILE    = h5open(joinpath(MixDIR,"X_proc.h5"),"w")
     YFILE    = h5open(joinpath(MixDIR,"Y_proc.h5"),"w")
     SFILE    = h5open(joinpath(MixDIR,"S_proc.h5"),"w")
+    XYFILE   = h5open(joinpath(MixDIR,"XY_proc.h5"),"w")
     Traces   = create_dataset( TrFILE, "data", datatype(Float32), dataspace(trlen,numtr))
     Buf      = create_dataset(BufFILE, "data", datatype(  UInt8), dataspace(    8,numtr))
     X        = create_dataset(  XFILE, "data", datatype(  Int16), dataspace(   16,numtr))
     Y        = create_dataset(  YFILE, "data", datatype(  Int16), dataspace(   16,numtr))
     S        = create_dataset(  SFILE, "data", datatype(  Int16), dataspace(   16,numtr))
+    XY       = create_dataset( XYFILE, "data", datatype(  Int16), dataspace(   16,numtr))
     for (n,dev) in enumerate(devices)
         print("$n/$(length(devices)) sampling from $dev: \r")
         selected  = sample(1:ntraces, nprofile+ntest; replace=false)
@@ -94,6 +124,10 @@ function pooledTraces(MixDIR, devices, ntest=500)
         devS      = loaddata(joinpath(srcDir(dev), "S_proc.npy"))
         S[:,(n-1)*nprofile+1 :      n*nprofile] = view(devS,:,selected[1:nprofile])
         S[:,   end-n*ntest+1 : end-(n-1)*ntest] = view(devS,:,selected[nprofile+1:end])
+        print("XY  ")
+        devXY     = loaddata(joinpath(srcDir(dev), "XY_proc.npy"))
+        XY[:,(n-1)*nprofile+1 :      n*nprofile] = view(devXY,:,selected[1:nprofile])
+        XY[:,   end-n*ntest+1 : end-(n-1)*ntest] = view(devXY,:,selected[nprofile+1:end])
         print("\r                                            \r")
     end
     close(TrFILE)
@@ -101,6 +135,7 @@ function pooledTraces(MixDIR, devices, ntest=500)
     close(XFILE)
     close(YFILE)
     close(SFILE)
+    close(XYFILE)
 end
 
 
@@ -121,10 +156,11 @@ function main()
         X      = loaddata( joinpath(MixDIR,   "X_proc.h5"); datapath="data")
         Y      = loaddata( joinpath(MixDIR,   "Y_proc.h5"); datapath="data")
         S      = loaddata( joinpath(MixDIR,   "S_proc.h5"); datapath="data")
-        
+        XY     = loaddata( joinpath(MixDIR,  "XY_proc.h5"); datapath="data")
+
         # profiling on pooled traces
         println("*** Device: $idx *************************")
-        secs = @elapsed Kyber768_profiling(MixDIR, OUTDIR, Traces, X, Y, S, Buf; nvalid,
+        secs = @elapsed Kyber768_profiling(MixDIR, OUTDIR, Traces; Buf, X, Y, S, XY, nvalid,
                                            POIe_left, POIe_right, nicv_th, buf_nicv_th)
         ts = Time(0) + Second(floor(secs))
         println("time: $ts -> profiling $devices")
@@ -136,6 +172,7 @@ function main()
         rm(joinpath(MixDIR,   "X_proc.h5"))
         rm(joinpath(MixDIR,   "Y_proc.h5"))
         rm(joinpath(MixDIR,   "S_proc.h5"))
+        rm(joinpath(MixDIR,  "XY_proc.h5"))
     end
 end
 

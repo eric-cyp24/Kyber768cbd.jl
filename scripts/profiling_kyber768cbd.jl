@@ -5,44 +5,71 @@ using TemplateAttack:loaddata
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = scratchTracesDIR
+TracesDIR = joinpath(@__DIR__, "../data/Traces-Os/")
 ###
 
-Dir   = DirHPFnew
+Dir   = DirHPFOs
 POIe_left, POIe_right = 40, 80
 nicv_th, buf_nicv_th = 0.001, 0.004
 #########################
 
 
-function Kyber768_profiling(INDIR, OUTDIR, Traces, X, Y, S, Buf; 
-                            POIe_left=80, POIe_right=20, nicv_th=0.001, buf_nicv_th=0.004)
-    numofcomponents, priors = 3, :uniform
-    fn = "Templates_X_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for X: $outfile")
-    Templates_X = runprofiling( X, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile);
+function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothing, Buf=nothing, XY=nothing, 
+                            POIe_left=0, POIe_right=0, nicv_th=0.001, buf_nicv_th=0.004)
+    if !isnothing(X)
+        numofcomponents, priors = 3, :uniform
+        fn = "Templates_X_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for X: $outfile")
+        if !isfile(outfile)
+            Templates_X = runprofiling( X, Traces; nicv_th, POIe_left, POIe_right, 
+                                                   priors, numofcomponents, outfile);
+        end
+    end
 
-    numofcomponents, priors = 3, :uniform
-    fn = "Templates_Y_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for Y: $outfile")
-    Templates_Y = runprofiling( Y, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile);
-
-    numofcomponents, priors = 4, :binomial
-    fn = "Templates_S_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for S: $outfile")
-    Templates_S = runprofiling( S, Traces; nicv_th, POIe_left, POIe_right, 
-                                           priors, numofcomponents, outfile);
-
-    numofcomponents, priors = 16, :uniform
-    fn = "Templates_Buf_proc_nicv$(string(buf_nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
-    outfile = joinpath(OUTDIR, fn)
-    println("profiling for Buf: $outfile")
-    Templates_Buf = runprofiling( Buf, Traces; nicv_th=buf_nicv_th, POIe_left, POIe_right, 
+    if !isnothing(Y)
+        numofcomponents, priors = 3, :uniform
+        fn = "Templates_Y_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for Y: $outfile")
+        if !isfile(outfile)
+        Templates_Y = runprofiling( Y, Traces; nicv_th, POIe_left, POIe_right, 
                                                priors, numofcomponents, outfile);
+        end
+    end
+
+    if !isnothing(S)
+        numofcomponents, priors = 4, :binomial
+        fn = "Templates_S_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for S: $outfile")
+        if !isfile(outfile)
+        Templates_S = runprofiling( S, Traces; nicv_th, POIe_left, POIe_right, 
+                                               priors, numofcomponents, outfile);
+        end
+    end
+
+    if !isnothing(Buf)
+        numofcomponents, priors = 16, :uniform
+        fn = "Templates_Buf_proc_nicv$(string(buf_nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for Buf: $outfile")
+        if !isfile(outfile)
+        Templates_Buf = runprofiling( Buf, Traces; nicv_th=buf_nicv_th, POIe_left, POIe_right, 
+                                                   priors, numofcomponents, outfile);
+        end
+    end
+
+    if !isnothing(XY)
+        numofcomponents, priors = 15, :uniform
+        fn = "Templates_XY_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
+        outfile = joinpath(OUTDIR, fn)
+        println("profiling for XY: $outfile")
+        if !isfile(outfile)
+        Templates_XY = runprofiling( XY, Traces; nicv_th, POIe_left, POIe_right, 
+                                                   priors, numofcomponents, outfile);
+        end
+    end
 end
 
 
@@ -61,10 +88,15 @@ function main()
         X      = loaddata( joinpath(INDIR,   "X_proc.npy")                )
         Y      = loaddata( joinpath(INDIR,   "Y_proc.npy")                )
         S      = loaddata( joinpath(INDIR,   "S_proc.npy")                )
+        XY     = loaddata( joinpath(INDIR,  "XY_proc.npy")                )
+        if XY != (X .+ (Y .<<2)) 
+            println("something is swong with XY_proc.npy")
+            XY = (X .+ (Y .<<2))
+        end
 
         # profiling
         println("*** Device: $dev *************************")
-        secs = @elapsed Kyber768_profiling(INDIR, OUTDIR, Traces, X, Y, S, Buf; 
+        secs = @elapsed Kyber768_profiling(INDIR, OUTDIR, Traces; X, Y, S, Buf, XY,
                                            POIe_left, POIe_right, nicv_th, buf_nicv_th)
         ts = Time(0) + Second(floor(secs))
         println("time: $ts -> profiling $TgtDir")
