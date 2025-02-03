@@ -1,3 +1,7 @@
+data
+data/
+results/
+
 
 Manifest.toml
 scripts_test/
@@ -5,4 +9,5 @@ scripts_test/
 *.npy
 *.h5
 
+TODO
 problems
