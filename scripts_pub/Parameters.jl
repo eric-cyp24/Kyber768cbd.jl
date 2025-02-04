@@ -1,10 +1,10 @@
 
 ###
-TracesDIROs = joinpath(@__DIR__, "../data/Traces-Os/")
-TracesDIRO1 = joinpath(@__DIR__, "../data/Traces-O1/")
-TracesDIRO3 = joinpath(@__DIR__, "../data/Traces-O3/")
-TMPFILE     = joinpath(@__DIR__, "../data/Kyber768.jl.tmp")
-TracesDIR   = joinpath(@__DIR__, "../data/Traces/")
+TracesDIROs = normpath( joinpath(@__DIR__, "../data/Traces-Os/") )
+TracesDIRO1 = normpath( joinpath(@__DIR__, "../data/Traces-O1/") )
+TracesDIRO3 = normpath( joinpath(@__DIR__, "../data/Traces-O3/") )
+TMPFILE     = normpath( joinpath(@__DIR__, "../data/Kyber768.jl.tmp") )
+TracesDIR   = normpath( joinpath(@__DIR__, "../data/Traces/") )
 ###
 ### Parameters ##########
 deviceslist = [:DK1, :DK2, :FN1, :FN2, :MS1, :MS2, :RS1, :RS2]

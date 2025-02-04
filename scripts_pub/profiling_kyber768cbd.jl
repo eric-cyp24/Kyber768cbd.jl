@@ -5,7 +5,7 @@ import TemplateAttack
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = joinpath(@__DIR__, "../data/Traces-pub/")
+TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces/") )
 ###
 
 Dir        = DirHPFOs

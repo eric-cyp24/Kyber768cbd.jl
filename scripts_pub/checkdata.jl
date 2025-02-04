@@ -4,7 +4,7 @@ using Mmap:mmap
 
 ### Parameters ##########
 url = "https://www.cl.cam.ac.uk/~cyp24/Traces-Os-pub/"
-dir = joinpath(@__DIR__, "../data/Traces-Os/") # data/Traces-Os/
+dir = normpath( joinpath(@__DIR__, "../data/Traces/") )
 checksumfile = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
 ###
 
@@ -26,12 +26,12 @@ end
 function walkdir(path; depth=0, h5::HDF5.File)
     ispath(path) || return error("$path doesn't exist")
     if isdir(path)
-        println("  "^depth, splitpath(path)[end], "/")
+        println("  "^depth, basename(path), "/")
         for _path in readdir(path)
             walkdir(joinpath(path,_path); depth=depth+1, h5)
         end
     else isfile(path)
-        filename = splitpath(path)[end]
+        filename = basename(path)
         checksum = crc32c(mmap(path))
         println("  "^depth, filename, "\t -> 0x", string(checksum, base=16))
         write(h5,path,checksum)
@@ -66,7 +66,7 @@ function downloadfile(filepath::T, checksum::UInt32; urlbase::T, dirbase::T) whe
     url = joinpath(urlbase,filepath)
     dir = joinpath(dirbase,dirname(filepath))
     outfile = joinpath(dirbase,filepath)
-    filename = splitpath(outfile)[end]
+    filename = basename(outfile)
     isdir(dir) || return error("$dir doesn't exist")
     if isfile(outfile) && crc32c(mmap(outfile)) == checksum
         #print(filename, " -> exist")
@@ -90,12 +90,12 @@ Triverse the h5 file, download from `utlbase` to `dirbase` if the file doesn't e
 function walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T) where T<:AbstractString
     if h5[path] isa HDF5.Group
         mkpath(joinpath(dirbase,path))
-        println("  "^depth, splitpath(path)[end], "/")
+        println("  "^depth, basename(path), "/")
         for _path in keys(h5[path])
             walkh5(joinpath(path,_path); depth=depth+1, h5, urlbase, dirbase)
         end
     else h5[path] isa HDF5.Dataset
-        filename = splitpath(path)[end]
+        filename = basename(path)
         checksum = read(h5, path)
         check = downloadfile(path, checksum; urlbase, dirbase)
         if check == 0
@@ -112,7 +112,7 @@ end
 function main()
     ## generate checksums
     #outfile = "Traces-Os-pub-checksum.h5"
-    #dirbase = "/home/cyp24/public_html/Traces-Os-pub/"
+    #dirbase = joinpath(homedir(),"public_html/Traces-Os-pub/")
     #genchecksum(outfile, dirbase)
     # download data
     downloaddata(checksumfile, url, dir)

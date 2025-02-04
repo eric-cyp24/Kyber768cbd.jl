@@ -6,18 +6,16 @@ using TemplateAttack:loaddata
 
 ### Parameters ##########
 include("Parameters.jl")
-dataurl = "https://www.cl.cam.ac.uk/~cyp24/Figure8_EMadj/"
 ###
 
 tplidx, tgtidx = :DK2, :MS2
 postfix = "_test_K"
-iv, nicvth = :X , 0.001 # {(:Buf,0.004), (:XY, 0.001), (:X, 0.001)}
 iv, nicvth = :XY, 0.001 # {(:Buf,0.004), (:XY, 0.001), (:X, 0.001)}
 POIe_left,POIe_right = 40,80
 byte=1
 
-TemplateDIR = joinpath(@__DIR__, "../data/Traces-Os/", DirHPFOs[tplidx], "lanczos2_25/Templates_POIe$(POIe_left)-$(POIe_right)/")
-TargetDIR   = joinpath(@__DIR__, "../data/Traces-Os/", DirHPFOs[tgtidx], "lanczos2_25$(postfix)/")
+TemplateDIR = joinpath(TracesDIR, DirHPFOs[tplidx], "lanczos2_25/Templates_POIe$(POIe_left)-$(POIe_right)/")
+TargetDIR   = joinpath(TracesDIR, DirHPFOs[tgtidx], "lanczos2_25$(postfix)/")
 OUTDIR      = "results/"
 fileformat  = :png  # :png or :pdf
 
@@ -63,16 +61,14 @@ end
 
 
 function main()
-    # check and download file
-    isdir(TemplateDIR) || mkpath(TemplateDIR)
-    isdir(TargetDIR)   || mkpath(TargetDIR)
+    # load file
     templatefile = joinpath(TemplateDIR, "Templates_$(iv)_proc_nicv$(string(nicvth)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5")
     tracefile    = joinpath(  TargetDIR, "traces$(postfix)_lanczos2_25_proc.npy")
     IVfile       = joinpath(  TargetDIR, "$(iv)$(postfix)_proc.npy")
 
     # load data
     template = loadtemplate(templatefile; byte)
-    traces = loaddata(tracefile)
+    traces   = loaddata(tracefile)
     if ndims(traces) == 3
         a, b, c = size(traces)
         traces  = reshape(traces, a, b*c)

@@ -4,7 +4,7 @@ using HDF5, Plots, ColorSchemes #mapc, colorschemes
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = joinpath(@__DIR__, "../data/Traces/")
+TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces/") )
 ###
 # key: (TraceNormalize, EMAdjust)
 adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
@@ -170,13 +170,14 @@ function main()
     println("Multi-device single-trace attacks: templates from KeyGen -> to KeyGen targets")
     postfix  = "_test_K"
     outfile  = joinpath(OUTDIR, KeyGenfname)
-    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{KenGen} from \\texttt{KeyGen} templates."
+    caption  = "Single-trace attack success rate of {\\Kyber}768.\\texttt{KenGen} from \\texttt{KeyGen}-\$\\mathit{$(join(IVs," ,"))}\$ templates."
     result2textable(outfile, postfix; caption, IVs)
 
     println("Multi-device single-trace attacks: templates from KeyGen -> to Encaps targets")
     postfix  = "_test_E"
     outfile  = joinpath(OUTDIR, Encapsfname)
-    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
+    caption  = "Single-trace attack success rate of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen}-\$\\mathit{$(join(IVs," ,"))}\$ templates."
+    #caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
     result2textable(outfile, postfix; caption, IVs)
 end
 

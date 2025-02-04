@@ -1,6 +1,6 @@
 using Dates:Time, Second
 using HDF5
-using Kyber768cbd:loaddata, key_guessing, tracesnormalize, writeTemplates
+using Kyber768cbd:loaddata, key_guessing, guessing_entropy, success_rate, tracesnormalize, loadtemplate, writeTemplates
 using Kyber768cbd:emalg_addprocs, rmprocs, singletraceattacks, Templates_EMadj!
 
 

@@ -6,7 +6,6 @@ include("Parameters.jl")
 ntraces   = 192000
 trlen     = 10440
 ntest     = 500
-TracesDIR = TracesDIROs
 ###
 
 Dir = DirHPFOs
