@@ -60,7 +60,7 @@ end
 """
     downloadfile(filepath::T, checksum::UInt32; urlbase::T, dirbase::T) where T <: AbstractString
 
-Download from `joinpath(urlbase,filepath)` to `joinpath(dirbase,filepath)`, skip if file already exist
+Download from `joinpath(urlbase,filepath)` to `joinpath(dirbase,filepath)`, skip if file is already there
 """
 function downloadfile(filepath::T, checksum::UInt32; urlbase::T, dirbase::T) where T <: AbstractString
     url = joinpath(urlbase,filepath)
@@ -99,7 +99,7 @@ function walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T) where T<:A
         checksum = read(h5, path)
         check = downloadfile(path, checksum; urlbase, dirbase)
         if check == 0
-            println("  "^depth, filename, "\t -> already exist")
+            println("  "^depth, filename, "\t -> already there")
         else
             check == checksum || error("something wrong with file: $(joinpath(urlbase,path))")
             println("  "^depth, filename, "\t -> downloaded")

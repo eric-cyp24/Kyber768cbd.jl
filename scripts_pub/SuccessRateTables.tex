@@ -1,0 +1,32 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+%\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with `a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=1.75cm]{geometry}
+
+
+\newcommand{\Kyber}{\textsc{Kyber}}
+\usepackage{booktabs}
+% checkout: https://latex-tutorial.com/color-latex/
+\usepackage[table]{xcolor}
+% checkout: https://tex.stackexchange.com/questions/121155/how-to-adjust-a-table-to-fit-on-page
+\usepackage{adjustbox}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{diagbox}
+\usepackage{boldline}
+
+
+\begin{document}
+
+\renewcommand\thetable{2}
+\input{results/KeyGen_Multi-Board_Single-Trace_Attack_Success_Rate}
+
+\renewcommand\thetable{3}
+\input{results/Encaps_Multi-Board_Single-Trace_Attack_Success_Rate}
+
+\end{document}
