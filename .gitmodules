@@ -1,15 +1,15 @@
 [submodule "packages/Npy.jl"]
 	path = packages/Npy.jl
-	url = git@github.com:eric-cyp24/Npy.jl.git
+	url = ../Npy.jl
 [submodule "packages/LeakageAssessment.jl"]
 	path = packages/LeakageAssessment.jl
-	url = git@github.com:eric-cyp24/LeakageAssessment.jl.git
+	url = ../LeakageAssessment.jl/
 [submodule "packages/TemplateAttack.jl"]
 	path = packages/TemplateAttack.jl
-	url = git@github.com:eric-cyp24/TemplateAttack.jl.git
+	url = ../TemplateAttack.jl
 [submodule "packages/EMAlgorithm.jl"]
 	path = packages/EMAlgorithm.jl
-	url = git@github.com:eric-cyp24/EMAlgorithm.jl.git
+	url = ../EMAlgorithm.jl
 [submodule "packages/BeliefPropagation.jl"]
 	path = packages/BeliefPropagation.jl
-	url = git@github.com:eric-cyp24/BeliefPropagation.jl.git
+	url = ../BeliefPropagation.jl
