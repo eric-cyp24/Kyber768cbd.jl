@@ -10,6 +10,3 @@
 [submodule "packages/EMAlgorithm.jl"]
 	path = packages/EMAlgorithm.jl
 	url = ../EMAlgorithm.jl
-[submodule "packages/BeliefPropagation.jl"]
-	path = packages/BeliefPropagation.jl
-	url = ../BeliefPropagation.jl
