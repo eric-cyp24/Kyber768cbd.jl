@@ -21,9 +21,9 @@ $ julia --project -e "import Pkg; Pkg.instantiate()"
 
 ## Download data
 Download the pre-built templates from all devices (DK1, FN1 - RS2) except for DK2,
-profiling traces from DK2, and attack traces from MS2. The two MS2 attack tracesets
-are from both KeyGen and Encaps operations, each with postfix `_test_K` and `_test_E`
-, respectively.
+profiling traces from DK2, and attack traces from MS2. The two MS2 attack trace sets
+are from both KeyGen and Encaps operations, each with postfix `_test_K` and `_test_E`,
+respectively.
 The data will be downloaded into the folder: `data/Traces/`.\
 \* Note that, the **dataset size is about 30GB**, please make sure you have
 enough disk space left.
@@ -38,11 +38,11 @@ $ julia --project scripts_pub/h5result2latextable_multiboardsingletrace.jl
 $ pdflatex -output-directory results scripts_pub/SuccessRateTables.tex
 ```
 Alternatively, you can paste the generated LaTeX codes (`results/...Success_Rate.tex`)
-into a LaTeX editor, e.g. [Overleaf](https://www.overleaf.com/), and you sould see 
+into a LaTeX editor, e.g. [Overleaf](https://www.overleaf.com/), and you sould see
 the tables:
 ![Success Rate Table](scripts_pub/LaTeX_tables.png)
 
-Note that the MS2 columns are incomplete, thus shown as `NaN` in the tables.
+Note that, the MS2 columns are incomplete, thus shown as `NaN` in the tables.
 You can complete the MS2 columns by:
 - First, build the device DK2 templates with the following profiling step.
 - Then, run the single-trace attacks on the MS2 target with templates from all
@@ -65,19 +65,30 @@ Run the single-trace attacks on the MS2 target device:
 ```
 $ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
 ```
-The `-t4` is the multi-thread option telling Julia to execute with 4 threads.
-You can speed up the computation by increasing the threads or decrease the 
-number of threads to limit the RAM usage. Each attack traceset (tabel cell)
-takes 3~15 minutes to finish. Therefore, this script may run for a while.
-(Please feel free to take a coffee break or go for a walk...) The attack
-results will be stored in the folder:
+The multi-thread argument `-t4` tells Julia to execute with 4 threads.
+Based on your computer's hardware resources, you can either speed up the
+computation by increasing the threads or decrease the number of threads to
+limit the RAM usage. Each attack trace set (table cell) takes 3~15 minutes
+to finish. Therefore, this script may run for a while. (Roughly *5 hr* on
+my computer, so please feel free to take a long...... coffee break.) The
+attack results will be stored as HDF5 files in the folder:
 `data/Traces/SOCKET_HPF/MS2/test_20241221/lanczos2_25_test_K/Results/Templates_POIe40-80/`.
-You can view the more detailed attacked metadata from the attacks with a HDF5
-viwer, for example: [myHDF5 online viewer](https://myhdf5.hdfgroup.org/)
+You can view the more detailed attacked metadata with a HDF5 viewer, e.g.
+[HDFView Software](https://www.hdfgroup.org/download-hdfview/) or
+[myHDF5 online viewer](https://myhdf5.hdfgroup.org/); or open the file
+directly with the [HDF5.jl package](https://juliaio.github.io/HDF5.jl/stable/)
+in Julia:
+```
+$ julia
+julia> using HDF5
+julia> resulth5 = h5open("data/path/to/result.h5")
+```
 
-For attacking the Encaps operation (Table 3 above), modify the `Parameters` section of 
-`scripts_pub/attack_kyber768cbd_Buf_singletrace.jl` by:
-* Changing the `postfix` from `"_test_K"` to `postfix = "_test_E"` at line 17.
+### Attacking the Encaps operation
+For attacking the Encaps operation (Table 3 above), modify the `Parameters`
+section of `scripts_pub/attack_kyber768cbd_Buf_singletrace.jl` by:
+* changing the `postfix` from `"_test_K"` to `"_test_E"` at line 16.
+* i.e. `postfix = "_test_E"` &#x1F852; `postfix = "_test_E"`
 
 Then, run the attack again:
 ```
@@ -85,7 +96,7 @@ $ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
 ```
 
 
-## Generate (LaTex) tables
+## Generate (LaTeX) tables
 To view the single-trace attack results, run the following code (again) to
 generate the `results/SuccessRateTables.pdf` with the newly produced success
 rates:
@@ -109,9 +120,11 @@ will be stored in the `results/` folder as the
 files.
 
 If you want to see the effect of EM template adjustment on a lower-leakage
-intermediate variable, modify the `scripts_pub/figure_emadj_templates.jl`
-script's `Parameters` section:\
-change the `iv` from `:XY` to `iv, nicvth = :X , 0.001` at line 13.\
+intermediate variable (iv), modify the `Parameters` section of
+`scripts_pub/figure_emadj_templates.jl` by:
+* changing the targeted variable `iv` from `:XY` to `:X` at line 13.
+* i.e. `iv, nicvth = :XY, 0.001` &#x1F852; `iv, nicvth = :X , 0.001`
+
 Then, run the plotting script again:
 ```
 $ julia --project scripts_pub/figure_emadj_templates.jl
