@@ -51,7 +51,7 @@ You can complete the MS2 columns by:
 
 ## Profiling
 Build the LDA-based templates from device DK2's profiling traces:
-`data/Traces-pub/SOCKET_HPF/DK2/test_20241219/lanczos2_25/traces_lanczos2_25_proc.npy`.
+`data/Traces-pub/SOCKET_HPF/DK2/test_20241219/lanczos2_25/traces_lanczos2_25_proc.h5`.
 The templates will be stored in the folder:
 `data/Traces-pub/SOCKET_HPF/DK2/test_20241219/lanczos2_25/Templates_POIe40-80/`.
 

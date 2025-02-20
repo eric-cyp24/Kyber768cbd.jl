@@ -5,12 +5,14 @@ using TemplateAttack:loaddata
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = joinpath(@__DIR__, "../data/Traces-Os/")
+TracesDIR = joinpath(@__DIR__, "../data/Traces-O3/")
 ###
 
-Dir   = DirHPFOs
-POIe_left, POIe_right = 40, 80
-nicv_th, buf_nicv_th = 0.001, 0.004
+Dir        = DirHPFO3
+Targetlist = [:RS1, :RS2] #deviceslist
+POIe_left, POIe_right  = 40, 80
+nicv_th  , buf_nicv_th = 0.001, 0.004
+IVs        = [:Buf, :XY, :X, :Y, :S] #[:Buf, :XY, :X, :Y, :S]
 #########################
 
 
@@ -75,7 +77,7 @@ end
 
 function main()
     # profiling for different devices
-    for dev in deviceslist
+    for dev in Targetlist
         # setting filepaths
         TgtDir = Dir[dev]
         INDIR  = joinpath(TracesDIR, TgtDir,"lanczos2_25/")
@@ -83,14 +85,14 @@ function main()
         isdir(OUTDIR) || mkpath(OUTDIR)
 
         # loading data
-        Traces = loaddata( joinpath(INDIR, "traces_lanczos2_25_proc.npy") )
-        Buf    = loaddata( joinpath(INDIR, "Buf_proc.npy")                )
-        X      = loaddata( joinpath(INDIR,   "X_proc.npy")                )
-        Y      = loaddata( joinpath(INDIR,   "Y_proc.npy")                )
-        S      = loaddata( joinpath(INDIR,   "S_proc.npy")                )
-        XY     = loaddata( joinpath(INDIR,  "XY_proc.npy")                )
+        Traces = loaddata( joinpath(INDIR, "traces_lanczos2_25_proc.h5") )
+        Buf    = :Buf in IVs ? loaddata( joinpath(INDIR, "Buf_proc.h5") ) : nothing
+        X      = :X   in IVs ? loaddata( joinpath(INDIR,   "X_proc.h5") ) : nothing
+        Y      = :Y   in IVs ? loaddata( joinpath(INDIR,   "Y_proc.h5") ) : nothing
+        S      = :S   in IVs ? loaddata( joinpath(INDIR,   "S_proc.h5") ) : nothing
+        XY     = :XY  in IVs ? loaddata( joinpath(INDIR,  "XY_proc.h5") ) : nothing
         if XY != (X .+ (Y .<<2)) 
-            println("something is swong with XY_proc.npy")
+            println("something is swong with XY_proc.h5")
             XY = (X .+ (Y .<<2))
         end
 
@@ -105,5 +107,15 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
+    for i in 0:20
+        if !isfile(TMPFILE*".$i")
+            global TMPFILE *= ".$i"
+            TemplateAttack.TMPFILE = TMPFILE
+            touch(TMPFILE)
+            break
+        end
+    end
+    println("TMPFILE: ",TMPFILE)
     main()
+    rm(TMPFILE)
 end

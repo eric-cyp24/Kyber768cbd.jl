@@ -63,8 +63,8 @@ end
 function main()
     # load file
     templatefile = joinpath(TemplateDIR, "Templates_$(iv)_proc_nicv$(string(nicvth)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5")
-    tracefile    = joinpath(  TargetDIR, "traces$(postfix)_lanczos2_25_proc.npy")
-    IVfile       = joinpath(  TargetDIR, "$(iv)$(postfix)_proc.npy")
+    tracefile    = joinpath(  TargetDIR, "traces$(postfix)_lanczos2_25_proc.h5")
+    IVfile       = joinpath(  TargetDIR, "$(iv)$(postfix)_proc.h5")
 
     # load data
     template = loadtemplate(templatefile; byte)

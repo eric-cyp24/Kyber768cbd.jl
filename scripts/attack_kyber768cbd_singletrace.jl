@@ -138,8 +138,8 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     print("loading traces...               ")
     Traces, S_true = begin
          TargetDIR = joinpath(TracesDIR, tgtDir[Targetidx], "lanczos2_25$(postfix)/")
-         ( loaddata( joinpath(TargetDIR, "traces$(postfix)_lanczos2_25_proc.npy") ),
-           loaddata( joinpath(TargetDIR, "S$(postfix)_proc.npy") )                 )
+         ( loaddata( joinpath(TargetDIR, "traces$(postfix)_lanczos2_25_proc.h5") ),
+           loaddata( joinpath(TargetDIR, "S$(postfix)_proc.h5") )                 )
     end
     println("Done!")
 
@@ -198,7 +198,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
         GEdict, SRdict = Dict(), Dict()
         evalsecs = @elapsed begin
             @views for (iv, tIV) in zip([:Buf, :X, :Y, :S], [tBuf, tX, tY, tS])
-                ivfile  = joinpath(TargetDIR, "$(String(iv))$(postfix)_proc.npy")
+                ivfile  = joinpath(TargetDIR, "$(String(iv))$(postfix)_proc.h5")
                 IV_true = reshape(loaddata(ivfile), (length(tIV),b*c) )
                 GEdict[iv] = Vector{Float32}(undef, size(IV_true,1))
                 SRdict[iv] = Vector{Float32}(undef, size(IV_true,1))

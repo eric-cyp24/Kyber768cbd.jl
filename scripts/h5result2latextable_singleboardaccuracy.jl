@@ -1,7 +1,6 @@
-
-using Printf, HDF5, Statistics
-using Plots, ColorSchemes #mapc, colorschemes
-using TemplateAttack: loaddata, success_rate, guessing_entropy
+using Printf, Statistics
+using HDF5, Plots, ColorSchemes #mapc, colorschemes
+using TemplateAttack:loaddata
 
 
 ### Parameters ##########
@@ -10,9 +9,11 @@ TracesDIR = bigscratchTracesDIR
 ###
 
 tpldev, tgtdev = :DK1, :DK1
-Dir, postfix   = DirHPFnew, "_test_K"
-tabletype      = :Sucess_Rate # :Guessing_Entropy
-adjtype        = "Traces_Templates_Unmodified"
+Dir, postfix   = DirHPFOs, "_test_K"
+method         = :BP # :marginalize or :BP
+POIe_left, POIe_right = 80, 20
+tabletype      = :Sucess_Rate #:Success_Rate # :Guessing_Entropy
+adjtype        = "Traces_Templates_Unmodified/"
 
 OUTDIR         = "results/"
 outfname       = "KeyGen_Template_Accuracy_$(tgtdev).tex"
@@ -78,30 +79,32 @@ function latextablewrapper(;part, caption="", label="")
     return txtline
 end
 
-function result2textable(tpldev::Symbol, tgtdev::Symbol; adjtype=adjtype, tabletype=tabletype, postfix=postfix)
-    resultfname = "Result_with_Template_from_$(replace(Dir[tpldev],"/"=>"_")[1:end-1]).h5"
-    resultfile  = joinpath(TracesDIR, Dir[tgtdev], "lanczos2_25$(postfix)/", resultfname)
+function result2textable_wrapper(tpldev::Symbol, tgtdev::Symbol; OUTDIR=OUTDIR, outfname=outfname, adjtype=adjtype, tabletype=tabletype, postfix=postfix, 
+                                                         method=method, POIe_left=POIe_left, POIe_right=POIe_right)
+    #resultfname = "Result_with_Template_from_$(replace(Dir[tpldev],"/"=>"_")[1:end-1]).h5"
+    resultfname = "$(method)_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(Dir[tpldev],"/"=>"_")[1:end-1]).h5"
+    resultfile  = joinpath(TracesDIR, Dir[tgtdev], "lanczos2_25$(postfix)/Results/Templates_POIe$(POIe_left)-$(POIe_right)/", resultfname)
 
+    isdir(OUTDIR) || mkdir(OUTDIR)
     outfile     = joinpath(OUTDIR, outfname*(split(outfname,".")[end]=="tex" ? "" : ".tex"))
     result2textable(resultfile, outfile; adjtype, tabletype, postfix)
 end
 
-function result2textable(resultfile::T, outfile::T; adjtype=adjtype, tabletype=tabletype, postfix=postfix) where{T<:AbstractString}
-
+function result2textable(resultfile, outfile; adjtype=adjtype, tabletype=tabletype, postfix=postfix)
     datasetpath = joinpath(adjtype, String(tabletype))
     # load data...
     print("loading result...      \r")
     table = h5open(resultfile, "r") do h5
         buf,x,y,s = [read(h5, joinpath(datasetpath, String(iv))) for iv in [:Buf, :X, :Y, :S]]
         s_guess   = reshape(read(h5, joinpath(adjtype,"S_BP_guess")), (16,48000))
-        s_true    = reshape(loaddata(joinpath(dirname(resultfile), "S$(postfix)_proc.npy")), (16,48000))
+        s_true    = reshape(loaddata(joinpath(dirname(resultfile), "../../", "S$(postfix)_proc.h5")), (16,48000))
         SASCA_s   = mean(s_guess.==s_true;dims=2)
         table     = [buf x[1:2:end] x[2:2:end] y[1:2:end] y[2:2:end] s[1:2:end] s[2:2:end] SASCA_s[1:2:end] SASCA_s[2:2:end]]
         [table; mean(table; dims=1)]
     end
 
-    # write data to tex
-    print("writing result...     \r")
+    ## write data to tex
+    print("writing result...     \r") # somehow this cause Segmentation fault when exiting...???
     header      = ["Buf","x1","x2","y1","y2","s1","s2","SASCA 1","SASCA 2"]
     firstcolumn = [["FG$i" for i in 1:8]; "Total"]
     open(outfile,"w") do f
@@ -110,14 +113,13 @@ function result2textable(resultfile::T, outfile::T; adjtype=adjtype, tabletype=t
         write(f, latextablecontent(table, firstcolumn; trange=(0.5,1.0)))
         write(f, latextablewrapper(;part=:end))
     end
-    return
 end
 
 
 
 function main()
-
-    result2textable(tpldev, tgtdev; adjtype, tabletype, postfix)
+    println("Template and SASCA accuracy: templates from $(Dir[tpldev])..._POIe$(POIe_left)-$(POIe_right)/ -> to target $(Dir[tgtdev])...$(postfix)")
+    result2textable_wrapper(tpldev, tgtdev; OUTDIR, outfname, adjtype, tabletype, postfix, method, POIe_left, POIe_right)
 
 end
 

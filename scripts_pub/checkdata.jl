@@ -111,12 +111,12 @@ end
 
 
 function main()
-    ## generate checksums
-    #outfile = "Traces-Os-pub-checksum.h5"
-    #dirbase = joinpath(homedir(),"public_html/Traces-Os-pub/")
-    #genchecksum(outfile, dirbase)
-    # download data
-    downloaddata(checksumfile, url, TracesDIR)
+    # generate checksums
+    outfile = "Traces-Os-pub-checksum.h5"
+    dirbase = joinpath(homedir(),"public_html/Traces-Os-pub/")
+    genchecksum(outfile, dirbase)
+    ## download data
+    #downloaddata(checksumfile, url, TracesDIR)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__

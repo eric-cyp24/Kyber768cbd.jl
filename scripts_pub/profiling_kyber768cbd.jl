@@ -26,12 +26,12 @@ function main()
         isdir(OUTDIR) || mkpath(OUTDIR)
 
         # loading data
-        Traces = loaddata( joinpath(INDIR, "traces_lanczos2_25_proc.npy") )
-        Buf    = :Buf in IVs ? loaddata( joinpath(INDIR, "Buf_proc.npy") ) : nothing
-        X      = :X   in IVs ? loaddata( joinpath(INDIR,   "X_proc.npy") ) : nothing
-        Y      = :Y   in IVs ? loaddata( joinpath(INDIR,   "Y_proc.npy") ) : nothing
-        S      = :S   in IVs ? loaddata( joinpath(INDIR,   "S_proc.npy") ) : nothing
-        XY     = :XY  in IVs ? loaddata( joinpath(INDIR,  "XY_proc.npy") ) : nothing
+        Traces = loaddata( joinpath(INDIR, "traces_lanczos2_25_proc.h5") )
+        Buf    = :Buf in IVs ? loaddata( joinpath(INDIR, "Buf_proc.h5") ) : nothing
+        X      = :X   in IVs ? loaddata( joinpath(INDIR,   "X_proc.h5") ) : nothing
+        Y      = :Y   in IVs ? loaddata( joinpath(INDIR,   "Y_proc.h5") ) : nothing
+        S      = :S   in IVs ? loaddata( joinpath(INDIR,   "S_proc.h5") ) : nothing
+        XY     = :XY  in IVs ? loaddata( joinpath(INDIR,  "XY_proc.h5") ) : nothing
 
         # profiling
         println("*** Device: $dev *************************")

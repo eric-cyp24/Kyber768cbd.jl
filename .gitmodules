@@ -1,6 +1,3 @@
-[submodule "packages/Npy.jl"]
-	path = packages/Npy.jl
-	url = ../Npy.jl
 [submodule "packages/LeakageAssessment.jl"]
 	path = packages/LeakageAssessment.jl
 	url = ../LeakageAssessment.jl/

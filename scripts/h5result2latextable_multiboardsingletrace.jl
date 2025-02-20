@@ -1,12 +1,10 @@
-using LinearAlgebra
-using Printf, HDF5, Statistics
-using Plots, ColorSchemes #mapc, colorschemes
-using TemplateAttack: loaddata
+using Printf, Statistics
+using HDF5, Plots, ColorSchemes #mapc, colorschemes
 
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = scratchTracesDIR #bigscratchTracesDIR or scratchTracesDIR
+TracesDIR = TracesDIROs #bigscratchTracesDIR or scratchTracesDIR
 ###
 # key: (TraceNormalize, EMAdjust)
 adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
@@ -14,15 +12,19 @@ adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
                 (0,0) => "Traces_Templates_Unmodified",
                 (1,0) => "Traces_Normalized")
 
-tplDir, tgtDir  = DirHPFnew, DirHPFnew
-h5oldname       = false
-method          = :BP # :marginalize or :BP
-POIe_left, POIe_right = 80, 20
+tplDir, tgtDir  = DirHPFOs, DirHPFOs
+IVs             = [:Buf]        #[:Buf, :XY, :X, :Y, :S] 
+method          = :marginalize # :marginalize or :BP
+POIe_left, POIe_right = 40, 80
+
+OUTDIR          = "results/"
+KeyGenfname     = "KeyGen_Multi-Board_Single-Trace_Attack_Success_Rate.tex"
+Encapsfname     = "Encaps_Multi-Board_Single-Trace_Attack_Success_Rate.tex"
 ### end of Parameters ###
 
-function resulth5name(;h5oldname, method=method, POIe_left=POIe_left, POIe_right=POIe_right, TemplateDir)
-    return h5oldname ? "Result_with_Template_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5" :
-           "$(method)_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
+function resulth5name(;IVs::Vector{Symbol}, method=method, POIe_left=POIe_left, POIe_right=POIe_right, TemplateDir)
+    return "$(method)_$(join(IVs))_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
+    return "Result_with_Template_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
 end
 
 function getSR(h5file, adjtype)  
@@ -35,14 +37,14 @@ function getSR(h5file, adjtype)
     end
 end
 
-function loadresult(adjtype; postfix="_test_K", templatelist, targetlist, h5oldname=h5oldname)
+function loadresult(adjtype; postfix="_test_K", templatelist, targetlist, IVs=IVs)
     resultdict = Dict()
     for (i,tplidx) in enumerate(templatelist)
         TrainDIR = tplidx in keys(tplDir) ? tplDir[tplidx] : pooledDir(devicespools[tplidx])
         for (j,tgt) in enumerate(targetlist)
             TargetDIR   = joinpath(TracesDIR, tgtDir[tgt], "lanczos2_25$(postfix)")
-            resultfname = resulth5name(;h5oldname, method, POIe_left, POIe_right, TemplateDir=TrainDIR)
-            resultfile  = joinpath(TargetDIR,h5oldname ? "" : "Results/Templates_POIe$(POIe_left)-$(POIe_right)/", resultfname)
+            resultfname = resulth5name(;IVs, method, POIe_left, POIe_right, TemplateDir=TrainDIR)
+            resultfile  = joinpath(TargetDIR,"Results/Templates_POIe$(POIe_left)-$(POIe_right)/", resultfname)
             resultdict[(tplidx,tgt)] = getSR(resultfile, adjtype)
         end
     end
@@ -73,14 +75,14 @@ end
 function latextablewrapper(;part, caption="", label="")
     txtline = ""
     if part == :begin
-        txtline  = "\\begin{table}[H]\n\\centering\n"
-        txtline *= "\\caption{$(caption)}$(isempty(label) ? "" : " \\label{$(label)}")\n"
+        txtline  = "%\\begin{table}[H]\n%\\centering\n"
+        txtline *= "%\\caption{$(caption)}$(isempty(label) ? "" : " \\label{$(label)}")\n"
         txtline *= "\\begin{adjustbox}{width=1\\textwidth}\n"
         txtline *= "\\begin{tabular}{V{4} c V{2} c|c|c|c|c|c|c|c||c|c|c|c|c|c|c|c V{4}}\n"
     elseif part == :end
         txtline  = "\\end{tabular}\n"
         txtline *= "\\end{adjustbox}\n"
-        txtline *= "\\end{table}\n"
+        txtline *= "%\\end{table}\n"
     end
     return txtline
 end
@@ -119,7 +121,7 @@ function latextablecontent(table::AbstractMatrix, firstcolumn::AbstractVector, a
     for (b,row) in zip(firstcolumn, eachrow(table))
         txtline  = "{$(String(b))} & "
         if aspercentage
-            txtline *= join([cellcolortxt(n)*@sprintf("%5.2f \\%% ",n*100) for n in row], "& ")
+            txtline *= join([cellcolortxt(n)*@sprintf("%5.1f \\%% ",n*100) for n in row], "& ")
         else
             txtline *= join([cellcolortxt(n;trange)*@sprintf("%6.3f ",n)   for n in row], "& ")
         end
@@ -130,16 +132,16 @@ function latextablecontent(table::AbstractMatrix, firstcolumn::AbstractVector, a
 end
 
 
-function result2textable(outfile::AbstractString, postfix=postfix; caption=caption, h5oldname=h5oldname)
+function result2textable(outfile::AbstractString, postfix=postfix; caption=caption, IVs=IVs)
     
     # load data
-    print("loading Traces...        \r")
+    print("loading Traces...        \r") # somehow print("... \r") cause Segmentation fault when exiting...???
     resulttables = Dict()
     for adjtype in [(0,0,0),(0,0,1),(1,0,0),(1,0,1),(0,1,0),(0,1,1)]
         (TraceNormalize, PooledDevices, EMAlg) = adjtype
         templatelist = Bool(PooledDevices) ? devpoolsidx : deviceslist
         targetlist   = deviceslist
-        resultdict   = loadresult((TraceNormalize,EMAlg); postfix, templatelist, targetlist, h5oldname)
+        resultdict   = loadresult((TraceNormalize,EMAlg); postfix, templatelist, targetlist, IVs)
         resulttables[adjtype] = resultdict2table(resultdict; templatelist, targetlist)
     end
 
@@ -163,15 +165,20 @@ end
 
 
 function main()
-    postfix  = "_test_K"
-    outfile  = joinpath("results/", "KeyGen_Multi-Board_Single-Trace_Attack_Success_Rate.tex")
-    caption  = "Single-trace attack success rate of {\\Kyber}-768.\\texttt{KenGen} from \\texttt{KeyGen} templates."
-    result2textable(outfile, postfix; caption, h5oldname)
 
+    isdir("results/") || mkdir("results/")
+
+    println("Multi-device single-trace attacks: templates from KeyGen -> to KeyGen targets")
+    postfix  = "_test_K"
+    outfile  = joinpath(OUTDIR, KeyGenfname)
+    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{KenGen} from \\texttt{KeyGen} templates."
+    result2textable(outfile, postfix; caption, IVs)
+
+    println("Multi-device single-trace attacks: templates from KeyGen -> to Encaps targets")
     postfix  = "_test_E"
-    outfile  = joinpath("results/", "Encaps_Multi-Board_Single-Trace_Attack_Success_Rate.tex")
-    caption  = "Single-trace attack success rate of {\\Kyber}-768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
-    result2textable(outfile, postfix; caption, h5oldname)
+    outfile  = joinpath(OUTDIR, Encapsfname)
+    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
+    result2textable(outfile, postfix; caption, IVs)
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__

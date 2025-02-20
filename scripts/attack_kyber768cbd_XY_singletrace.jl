@@ -9,18 +9,19 @@ using EMAlgorithm:emalg_addprocs, rmprocs
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = joinpath(@__DIR__, "../data/Traces-Os/")
-TMPFILE   = joinpath(@__DIR__, "../data/", "TemplateAttack.jl.tmp1")
+TracesDIR = joinpath(@__DIR__, "../data/Traces-O3/")
+#TMPFILE   = joinpath(@__DIR__, "../data/", "TemplateAttack.jl.tmp")
 numproc   = Sys.CPU_THREADS÷2  # Number of multi-process for EM-adj
 skipexist = false
 ###
 
-tgtlist, tpllist, pooltpllist = deviceslist, deviceslist, devpoolsidx
-tplDir  = DirHPFOs  # DirHPFnew
-tgtDir  = DirHPFOs  # DirHPFnew
+tgtlist, tpllist, pooltpllist = [:FN1, :FN2],[:FN1, :FN2],[]#deviceslist, deviceslist, devpoolsidx
+tplDir  = DirHPFO3  # DirHPFnew
+tgtDir  = DirHPFO3  # DirHPFnew
 postfix = "_test_K"     # _test_E or _test_K
 POIe_left, POIe_right = 40, 80
 nicvth   , bufnicvth  = 0.001, 0.004
+num_epoch, buf_epoch  = 30, 20
 method  = :marginalize  #:marginalize or :BP
 ### end of Parameters ###
 
@@ -101,8 +102,8 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     print("loading traces...               ")
     Traces, S_true = begin
          TargetDIR = joinpath(TracesDIR, tgtDir[Targetidx], "lanczos2_25$(postfix)/")
-         ( loaddata( joinpath(TargetDIR, "traces$(postfix)_lanczos2_25_proc.npy") ),
-           loaddata( joinpath(TargetDIR, "S$(postfix)_proc.npy") )                 )
+         ( loaddata( joinpath(TargetDIR, "traces$(postfix)_lanczos2_25_proc.h5") ),
+           loaddata( joinpath(TargetDIR, "S$(postfix)_proc.h5") )                 )
     end
     println("Done!")
 
@@ -161,7 +162,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
         Traces = reshape(Traces,(a,b*c))
         GEdict, SRdict = Dict(), Dict()
         evalsecs = @elapsed begin
-            ivfile  = joinpath(TargetDIR, "$(String(iv))$(postfix)_proc.npy")
+            ivfile  = joinpath(TargetDIR, "$(String(iv))$(postfix)_proc.h5")
             IV_true = reshape(loaddata(ivfile), (length(tIV),b*c) )
             GEdict[iv] = Vector{Float32}(undef, size(IV_true,1))
             SRdict[iv] = Vector{Float32}(undef, size(IV_true,1))
@@ -242,15 +243,15 @@ function Templates_EMadj!(tIV::Vector{Template}, iv::Symbol, Traces::AbstractMat
     EMerror = false
     for (byte,t) in enumerate(tIV)
         print("                                             -> byte: ",byte,"\r")
-        dims, Σscale = ndims(t), 1
+        dims, Σscale = ndims(t), 4
         while dims > 1
             try
                 adjust!(t, Traces; num_epoch, dims, Σscale)
                 break
             catch e
                 EMerror = true
-                if Σscale < 8
-                    Σscale *= 2
+                if Σscale < 16
+                    Σscale *= 4
                     println(iv," byte: ",byte," EM Algorithm error -> Σscale=", Σscale, "   ")
                 else
                     dims -= 2
@@ -291,7 +292,7 @@ function main()
         println("#### Template from ",tplidx," -> Target ",tgtidx,postfix," ####")
 
         if skipexist
-            resultfile   = "$(method)_Buf_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(tplDir[tplidx],"/"=>"_")[1:end-1]).h5"
+            resultfile   = "$(method)_XY_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(tplDir[tplidx],"/"=>"_")[1:end-1]).h5"
             TargetDIR    = joinpath(TracesDIR, tgtDir[tgtidx], "lanczos2_25$(postfix)/")
             OUTDIR       = joinpath(TargetDIR, "Results/Templates_POIe$(POIe_left)-$(POIe_right)/")
             isfile(joinpath(OUTDIR, resultfile)) && continue
@@ -300,28 +301,28 @@ function main()
         # Unmodified Templates & Traces
         println("*** Unmodified Templates & Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=true,
-                             TracesNormalization=false, EMadjust=false, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=false, EMadjust=false, num_epoch, buf_epoch)
         println("**********************************************")
         GC.gc()
 
         # Unmodified Templates & Normalized Traces
         println("*** Unmodified Templates & Normalized Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=false,
-                             TracesNormalization=true, EMadjust=false, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=true, EMadjust=false, num_epoch, buf_epoch)
         println("**********************************************")
         GC.gc()
 
         # Adjusted Templates & Unmodified Traces
         println("*** Adjusted Templates & Unmodified Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=false,
-                             TracesNormalization=false, EMadjust=true, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=false, EMadjust=true, num_epoch, buf_epoch)
         println("**********************************************")
         GC.gc()
 
         # Adjusted Templates & Normalized Traces
         println("*** Adjusted Templates & Normalized Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=false,
-                             TracesNormalization=true, EMadjust=true, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=true, EMadjust=true, num_epoch, buf_epoch)
         println("**********************************************")
         GC.gc()
         println("#########################################################################\n\n")
@@ -331,7 +332,7 @@ function main()
         println("#### Template from ",tplidx," -> Target ",tgtidx,postfix," ####")
 
         if skipexist
-            resultfile   = "$(method)_Buf_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(pooledDir(devicespools[tplidx]),"/"=>"_")[1:end-1]).h5"
+            resultfile   = "$(method)_XY_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(pooledDir(devicespools[tplidx]),"/"=>"_")[1:end-1]).h5"
             TargetDIR    = joinpath(TracesDIR, tgtDir[tgtidx], "lanczos2_25$(postfix)/")
             OUTDIR       = joinpath(TargetDIR, "Results/Templates_POIe$(POIe_left)-$(POIe_right)/")
             isfile(joinpath(OUTDIR, resultfile)) && continue
@@ -340,13 +341,13 @@ function main()
         # Unmodified Templates & Traces
         println("*** Unmodified Templates & Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=true,
-                             TracesNormalization=false, EMadjust=false, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=false, EMadjust=false, num_epoch, buf_epoch)
         println("**********************************************")
 
         # Adjusted Templates & Unmodified Traces
         println("*** Adjusted Templates & Unmodified Traces ***")
         Cross_Device_Attack(tplidx, tgtidx, postfix; method, resulth5overwrite=false,
-                             TracesNormalization=false, EMadjust=true, num_epoch=20, buf_epoch=5)
+                             TracesNormalization=false, EMadjust=true, num_epoch, buf_epoch)
         println("**********************************************")
         println("#########################################################################\n\n")
         end
@@ -356,5 +357,14 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
+    for i in 0:20
+        if !isfile(TMPFILE*".$i")
+            global TMPFILE *= ".$i"
+            touch(TMPFILE)
+            break
+        end
+    end
+    println("TMPFILE: ",TMPFILE)
     main()
+    rm(TMPFILE)
 end

@@ -3,10 +3,11 @@ scratchTracesDIR    = "/local/scratch/cyp24/Lab/Kyber768/Traces/"
 bigscratchTracesDIR = "/local/bigscratch/cyp24/Lab/Kyber768/Traces/"
 ext1TracesDIR       = "/local/ext1/Kyber768/Traces/"
 ###
-TracesDIR   = joinpath(@__DIR__, "../data/Traces/")
 TracesDIROs = joinpath(@__DIR__, "../data/Traces-Os/")
-TMPFILE     = ispath("/local/scratch/cyp24/") ? "/local/scratch/cyp24/TemplateAttack.jl.tmp" :
-                                                joinpath(@__DIR__, "../data/TemplateAttack.jl.tmp")
+TracesDIRO1 = joinpath(@__DIR__, "../data/Traces-O1/")
+TracesDIRO3 = joinpath(@__DIR__, "../data/Traces-O3/")
+TMPFILE     = ispath("/local/scratch/cyp24/") ? "/local/scratch/cyp24/Kyber768cbd.jl.tmp" :
+                                                joinpath(@__DIR__, "../data/Kyber768.jl.tmp")
 ###
 ### Parameters ##########
 deviceslist = [:DK1, :DK2, :FN1, :FN2, :MS1, :MS2, :RS1, :RS2]
@@ -29,18 +30,7 @@ DirHPFold = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240416/",
                  :RS2 => "SOCKET_HPF/RS2/test_20240409/",
                  :CWA => "STM32F/Board_A_hpf/test_20240424/")
 
-DirHPFnew = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240724/",
-                 :DK2 => "SOCKET_HPF/DK2/test_20240725/",
-                 :FN1 => "SOCKET_HPF/FN1/test_20240725/",
-                 :FN2 => "SOCKET_HPF/FN2/test_20240726/",
-                 :MS1 => "SOCKET_HPF/MS1/test_20240726/",
-                 :MS2 => "SOCKET_HPF/MS2/test_20240727/",
-                 :RS1 => "SOCKET_HPF/RS1/test_20240723/",
-                 :RS2 => "SOCKET_HPF/RS2/test_20240724/",
-                 :CWA => "STM32F/Board_A_hpf/test_20240822/",
-                 :CWB => "STM32F/Board_B_hpf/test_20240823/")
-
-DirHPFnew2 = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240930/",
+DirHPFO1n  = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240930/",
                   :DK2 => "SOCKET_HPF/DK2/test_20240930/",
                   :FN1 => "SOCKET_HPF/FN1/test_20241001/",
                   :FN2 => "SOCKET_HPF/FN2/test_20241001/",
@@ -49,22 +39,43 @@ DirHPFnew2 = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240930/",
                   :RS1 => "SOCKET_HPF/RS1/test_20241003/",
                   :RS2 => "SOCKET_HPF/RS2/test_20241003/")
 
+# TracesDIROs = ".../Kyber768/Traces-Os/"
+DirHPFOs = Dict(:DK4 => "SOCKET_HPF/DK4/test_20241218/",
+                :DK1 => "SOCKET_HPF/DK1/test_20241219/",
+                :DK2 => "SOCKET_HPF/DK2/test_20241219/",
+                :FN1 => "SOCKET_HPF/FN1/test_20241220/",
+                :FN2 => "SOCKET_HPF/FN2/test_20241220/",
+                :MS1 => "SOCKET_HPF/MS1/test_20241221/",
+                :MS2 => "SOCKET_HPF/MS2/test_20241221/",
+                :RS1 => "SOCKET_HPF/RS1/test_20241222/",
+                :RS2 => "SOCKET_HPF/RS2/test_20241222/")
+
+# TracesDIRO1 = ".../Kyber768/Traces-O1/"
+DirHPFO1 = Dict(:DK1 => "SOCKET_HPF/DK1/test_20240724/",
+                :DK2 => "SOCKET_HPF/DK2/test_20240725/",
+                :FN1 => "SOCKET_HPF/FN1/test_20240725/",
+                :FN2 => "SOCKET_HPF/FN2/test_20240726/",
+                :MS1 => "SOCKET_HPF/MS1/test_20240726/",
+                :MS2 => "SOCKET_HPF/MS2/test_20240727/",
+                :RS1 => "SOCKET_HPF/RS1/test_20240723/",
+                :RS2 => "SOCKET_HPF/RS2/test_20240724/",
+                :CWA => "STM32F/Board_A_hpf/test_20240822/",
+                :CWB => "STM32F/Board_B_hpf/test_20240823/")
+
 # TracesDIRO3 = ".../Kyber768/Traces-O3/"
-DirHPFO3   = Dict(:DK4 => "SOCKET_HPF/DK4/test_20241029/")
+DirHPFO3 = Dict(:DK4 => "SOCKET_HPF/DK4/test_20241029/",
+                :DK1 => "SOCKET_HPF/DK1/test_20250102/",
+                :DK2 => "SOCKET_HPF/DK2/test_20250108/",
+                :FN1 => "SOCKET_HPF/FN1/test_20250109/",
+                :FN2 => "SOCKET_HPF/FN2/test_20250109/",
+                :MS1 => "SOCKET_HPF/MS1/test_20250110/",
+                :MS2 => "SOCKET_HPF/MS2/test_20250110/",
+                :RS1 => "SOCKET_HPF/RS1/test_20250111/",
+                :RS2 => "SOCKET_HPF/RS2/test_20250111/")
 
 
-# TracesDIR = ".../Kyber768/Traces-Os/"
-DirHPFOs   = Dict(:DK4 => "SOCKET_HPF/DK4/test_20241218/",
-                  :DK1 => "SOCKET_HPF/DK1/test_20241219/",
-                  :DK2 => "SOCKET_HPF/DK2/test_20241219/",
-                  :FN1 => "SOCKET_HPF/FN1/test_20241220/",
-                  :FN2 => "SOCKET_HPF/FN2/test_20241220/",
-                  :MS1 => "SOCKET_HPF/MS1/test_20241221/",
-                  :MS2 => "SOCKET_HPF/MS2/test_20241221/",
-                  :RS1 => "SOCKET_HPF/RS1/test_20241222/",
-                  :RS2 => "SOCKET_HPF/RS2/test_20241222/")
 
-
+srcDir(TracesDIR,dev) = joinpath(TracesDIR, Dir[dev],"lanczos2_25/")
 
 
 # pooled traces
