@@ -1,13 +1,37 @@
-using Downloads, HDF5, Printf
+using ArgParse, Downloads, HDF5, Printf
 using CRC32c:crc32c
 using Mmap:mmap
 
 ### Parameters ##########
 url          = "https://www.cl.cam.ac.uk/~cyp24/Traces-Os-pub/"
 TracesDIR    = normpath( joinpath(@__DIR__, "../data/Traces/") )
-checksumfile = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
+checksumfile = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
+## generate checksum file
+outfile = "Traces-Os-pub-checksum.h5"
+dirbase = joinpath(homedir(),"public_html/Traces-Os-pub/")
 ###
 
+function parse_commandline()
+    s = ArgParseSettings()
+    @add_arg_table! s begin
+        "--gen"
+            action = :store_true
+            help   = "generate checksum.h5 file"
+        "--all"
+            action = :store_true
+            help   = "download all the required data"
+        "--profiling", "-p"
+            action = :store_true
+            help   = "download data for profiling (DK2 device)"
+        "--attack", "-a"
+            action = :store_true
+            help   = "download data for attack (MS2 devices & Template files)"
+        "--Results", "-r"
+            action = :store_true
+            help   = "download result files"
+    end
+    return parse_args(s)
+end
 
 
 ### generate the checksum.h5 file ##############
@@ -37,7 +61,6 @@ function walkdir(path; depth=0, h5::HDF5.File)
         write(h5,path,checksum)
     end
 end
-
 
 
 ### download data files ########################
@@ -111,12 +134,23 @@ end
 
 
 function main()
+
+    args = parse_commandline()
+
     # generate checksums
-    outfile = "Traces-Os-pub-checksum.h5"
-    dirbase = joinpath(homedir(),"public_html/Traces-Os-pub/")
-    genchecksum(outfile, dirbase)
-    ## download data
-    #downloaddata(checksumfile, url, TracesDIR)
+    if args["gen"]
+        println("generating checksum file: ",outfile," from: ",dirbase)
+        genchecksum(outfile, dirbase)
+    # download data
+    elseif args["profiling"]
+        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5"), url, TracesDIR)
+    elseif args["attack"]
+        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5"), url, TracesDIR)
+    elseif args["Results"]
+        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5"), url, TracesDIR)
+    else
+        download(checksumfile, url, TracesDIR)
+    end
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
