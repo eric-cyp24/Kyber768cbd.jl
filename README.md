@@ -26,18 +26,18 @@ are from both KeyGen and Encaps operations, each with postfix `_test_K` and `_te
 respectively.
 The data will be downloaded into the folder: `data/Traces/`.\
 \* Note that, the **dataset size is about 30GB**, please make sure you have
-enough disk space left.\
+enough disk space left.
 ```
 $ julia --project scripts_pub/downloaddata.jl
 ```
 \* Or you can download the required datasets for each following step individually
 and remove them afterward, which would reduce storage requirement down to **17GB**.
 ```
-$ julia --project scripts_pub/downloaddata.jl --profiling    # required 7.5GB
-$ julia --project scripts_pub/downloaddata.jl --attack       # required 4.6GB
+$ julia --project scripts_pub/downloaddata.jl --profiling    # require 7.5GB
+$ julia --project scripts_pub/downloaddata.jl --attack       # require 4.6GB
 
 ## optional: attack results from other target devices ##
-$ julia --project scripts_pub/downloaddata.jl --Results      # required 17GB
+$ julia --project scripts_pub/downloaddata.jl --Results      # require 17GB
 ```
 Run the following Julia script to generate LaTeX table source code. Then, use the
 `pdflatex` tool to generate the table below as the `results/SuccessRateTables.pdf`
