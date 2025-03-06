@@ -5,7 +5,7 @@ using Mmap:mmap
 ### Parameters ##########
 url          = "https://www.cl.cam.ac.uk/~cyp24/Traces-Os-pub/"
 TracesDIR    = normpath( joinpath(@__DIR__, "../data/Traces/") )
-checksumfile = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
+checksumfile = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
 ###
 
 function parse_commandline()
@@ -110,7 +110,7 @@ function main()
     elseif args["Results"]
         downloaddata(joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5"), url, TracesDIR)
     else
-        download(checksumfile, url, TracesDIR)
+        downloaddata(checksumfile, url, TracesDIR)
     end
 end
 
