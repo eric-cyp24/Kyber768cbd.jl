@@ -12,7 +12,7 @@ Dir        = DirHPFOs
 Targetlist = [:DK2] #deviceslist
 POIe_left, POIe_right  = 40, 80
 nicv_th  , buf_nicv_th = 0.001, 0.004
-IVs        = [:Buf, :XY, :S] #[:Buf, :XY, :X, :Y, :S]
+IVs        = [:Buf, :XY, :X] #[:Buf, :XY, :X, :Y, :S]
 #########################
 
 
