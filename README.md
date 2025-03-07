@@ -96,14 +96,10 @@ julia> resulth5 = h5open("data/path/to/result.h5")
 ```
 
 ### Attacking the Encaps operation
-For attacking the Encaps operation (Table 3 above), modify the `Parameters`
-section of `scripts_pub/attack_kyber768cbd_Buf_singletrace.jl` by:
-* changing the `postfix` from `"_test_K"` to `"_test_E"` at line 16.
-* i.e. `postfix = "_test_E"` &#x1F852; `postfix = "_test_E"`
-
-Then, run the attack again:
+For attacking the Encaps operation (Table 3 above), run the same attack
+script with the additional command line argument: `--targetOP Encaps`
 ```
-$ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
+$ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
 ```
 
 

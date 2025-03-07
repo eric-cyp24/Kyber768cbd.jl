@@ -1,5 +1,5 @@
 using Dates:Time, Second
-using HDF5
+using ArgParse, HDF5
 using Kyber768cbd:loaddata, key_guessing, guessing_entropy, success_rate, tracesnormalize, loadtemplate, writeTemplates
 using Kyber768cbd:emalg_addprocs, rmprocs, singletraceattacks, Templates_EMadj!
 
@@ -19,6 +19,15 @@ nicvth   , bufnicvth  = 0.001, 0.004
 num_epoch, buf_epoch  = 30, 20
 method  = :marginalize
 ### end of Parameters ###
+
+function parse_commandline()
+    s = ArgParseSettings()
+    @add_arg_table! s begin
+        "--targetOP", "--OP"
+            help = "select the targeted Kyber operation: {KeyGen|Encaps}"
+    end
+    return parse_args(s)
+end
 
 function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::AbstractString; resulth5overwrite::Bool=false, method=:marginalize,
                              TracesNormalization::Bool=false, EMadjust::Bool=false, evalGESR::Bool=true, num_epoch=num_epoch, buf_epoch=buf_epoch,
@@ -66,7 +75,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
 	isdir(OUTDIR) || mkpath(OUTDIR)
     outfile      = joinpath(OUTDIR, resultfile) #joinpath(TargetDIR, resultfile)
     h5resultpath = TracesNormalization ? (EMadjust ? "Traces_Normalized_Templates_Adj_EM/" : "Traces_Normalized/") :
-                                         (EMadjust ? "Traces_Unmodified_Templates_Adj_EM/" : "Traces_Templates_Unmodified/")         
+                                         (EMadjust ? "Traces_Unmodified_Templates_Adj_EM/" : "Traces_Templates_Unmodified/")
     println("writing result to file: ",outfile)
     ## "w":create & overwite, "cw": create or modify
     h5open(outfile, resulth5overwrite ? "w" : "cw") do h5
@@ -132,12 +141,24 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     EMadjust && print("EM adjustment: ",Time(0)+Second(floor(emadjsecs)),"\t")
 	print("Single-Trace Attack: ",Time(0)+Second(floor(attacksecs)),"\t")
 	println("Evaluation: ",Time(0)+Second(floor(evalsecs)),"\n")
-    return 
+    return
 end
 
 
 
 function main()
+
+    args = parse_commandline()
+    isnothing(args["targetOP"]) || begin
+        targetOP = lowercase(args["targetOP"])
+        if targetOP == "keygen" || targetOP == "k"
+            global postfix = "_test_K"
+        elseif targetOP == "encaps" || targetOP == "e"
+            global postfix = "_test_E"
+        else
+            global postfix = "_test_K"
+        end
+    end
 
     newworkers = emalg_addprocs(numproc)
     for tgtidx in tgtlist
