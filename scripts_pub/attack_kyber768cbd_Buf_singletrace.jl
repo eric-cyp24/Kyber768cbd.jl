@@ -7,7 +7,7 @@ using Kyber768cbd:emalg_addprocs, rmprocs, singletraceattacks, Templates_EMadj!
 ### Parameters ##########
 include("Parameters.jl")
 numproc   = Sys.CPU_THREADS÷2  # Number of multi-process for EM adjustment
-skipexist = true
+skipexist = false
 ###
 
 tgtlist, tpllist, pooltpllist = [:MS2], deviceslist, devpoolsidx #deviceslist, deviceslist, devpoolsidx

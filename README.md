@@ -74,6 +74,10 @@ $ julia --project scripts_pub/profiling_kyber768cbd.jl
 Run the single-trace attacks on the MS2 target device:
 ```
 $ julia --project scripts_pub/downloaddata.jl --attack
+$ julia --project scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
+```
+You can speed up the attack by running Julia with multi-thread:
+```
 $ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
 ```
 The multi-thread argument `-t4` tells Julia to execute with 4 threads.
@@ -99,7 +103,7 @@ julia> resulth5 = h5open("data/path/to/result.h5")
 For attacking the Encaps operation (Table 3 above), run the same attack
 script with the additional command line argument: `--targetOP Encaps`
 ```
-$ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+$ julia --project scripts_pub/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
 ```
 
 
