@@ -1,7 +1,7 @@
 module Kyber768cbd
 
 using TemplateAttack
-using TemplateAttack:loaddata, trace_normalize, key_guessing
+using TemplateAttack:loaddata, trace_normalize, trace_normalize!, key_guessing
 using EMAlgorithm:emalg_addprocs, rmprocs
 
 include("Parameters.jl")

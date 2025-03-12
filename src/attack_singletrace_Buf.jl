@@ -79,26 +79,23 @@ function writeTemplates(filename::AbstractString, templatepath::AbstractString; 
 end
 
 function tracesnormalize(Traces::AbstractArray, template::Template; TMPFILE=nothing)
-    a,b,c  = size(Traces)
+    traces = reshape(Traces, size(Traces,1), :)
     if isnothing(TMPFILE)
-        return reshape( trace_normalize(reshape(Traces,(a,b*c)),template), (a,b,c))
-    else
+        return reshape( trace_normalize(traces,template), size(Traces))
+    else # use memmap
         return open(TMPFILE,"w+") do f
-           Traces_mmap    = mmap(f, typeof(Traces), size(Traces))
-           Traces_mmap[:] = reshape( trace_normalize(reshape(Traces,(a,b*c)),template), (a,b,c) )
-           Traces_mmap
+           Traces_mmap    = mmap(f, typeof(traces), size(traces))
+           Traces_mmap[:] = traces
+           reshape( trace_normalize!(Traces_mmap,template), size(Traces))
         end
     end
 end
 
 
 function Templates_EMadj!(tIV::Vector{Template}, iv::Symbol, Traces::AbstractArray; num_epoch=20, newprocs::Bool=true)
-    if ndims(Traces) == 3
-        a,b,c = size(Traces)
-        Traces = reshape(Traces, (a,b*c))
-    end
     newworkers = newprocs ? emalg_addprocs(Sys.CPU_THREADS÷2) : []
-    Templates_EMadj!(tIV, iv, Traces; num_epoch)
+    traces     = reshape(Traces, size(Traces,1), :)
+    Templates_EMadj!(tIV, iv, traces; num_epoch)
     newprocs && rmprocs(newworkers)
     return tIV
 end
@@ -131,13 +128,10 @@ end
 
 function CBDTemplates_EMadj!(CBDTemplates, Traces::AbstractArray; newprocs::Bool=true,
                              buf_epoch=20, buf_dims=16, num_epoch=30)
-    if ndims(Traces) == 3
-        a,b,c = size(Traces)
-        Traces = reshape(Traces, (a,b*c))
-    end
     newworkers = newprocs ? emalg_addprocs(Sys.CPU_THREADS÷2) : []
+    traces     = reshape(Traces, size(Traces,1), :)
     for (iv, tIV) in zip([:Buf, :XY, :X, :Y, :S], CBDTemplates)
-        Templates_EMadj!(tIV, iv, Traces; num_epoch=(iv==:Buf ? buf_epoch : num_epoch))
+        Templates_EMadj!(tIV, iv, traces; num_epoch=(iv==:Buf ? buf_epoch : num_epoch))
     end
     print("\r                    \r")
     newprocs && rmprocs(newworkers)

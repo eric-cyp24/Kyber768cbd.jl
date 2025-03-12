@@ -46,9 +46,8 @@ file.
 $ julia --project scripts_pub/h5result2latextable_multiboardsingletrace.jl
 $ pdflatex -output-directory results scripts_pub/SuccessRateTables.tex
 ```
-Alternatively, you can paste the generated LaTeX codes (`results/...Success_Rate.tex`)
-into a LaTeX editor, e.g. [Overleaf](https://www.overleaf.com/), and you sould see
-the tables:
+Alternatively, you can paste the generated LaTeX codes (`results/*Success_Rate.tex`)
+into a LaTeX editor, and you should see the tables:
 ![Success Rate Table](scripts_pub/LaTeX_tables.png)
 
 Note that, the MS2 columns are incomplete, thus shown as `NaN` in the tables.

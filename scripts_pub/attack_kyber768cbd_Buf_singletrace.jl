@@ -54,7 +54,8 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     # Trace normaliztion
     if TracesNormalization
         print("normalizing target traces...    ")
-        Traces = tracesnormalize(Traces, tBuf[1]; TMPFILE)
+        usememmap = Sys.free_memory() < sizeof(Traces)*2
+        Traces = tracesnormalize(Traces, tBuf[1]; TMPFILE= usememmap ? TMPFILE : nothing)
         println("Done!")
     end
 
@@ -102,19 +103,18 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     iv, tIV = :Buf, tBuf
     if evalGESR
         println("evaluating GE & SR...           ")
-        a,b,c = size(Traces)
-        Traces = reshape(Traces,(a,b*c))
+        traces = reshape(Traces,size(Traces,1),:)
         GEdict, SRdict = Dict(), Dict()
         evalsecs = @elapsed begin
             ivfile  = joinpath(TargetDIR, "$(String(iv))$(postfix)_proc.h5")
-            IV_true = reshape(loaddata(ivfile), (length(tIV),b*c) )
+            IV_true = reshape(loaddata(ivfile), length(tIV), : )
             GEdict[iv] = Vector{Float32}(undef, size(IV_true,1))
             SRdict[iv] = Vector{Float32}(undef, size(IV_true,1))
-            key_guesses = Array{Int16,3}(undef, (length(tIV[1]),size(Traces,2),size(IV_true,1)))
+            key_guesses = Array{Int16,3}(undef, (length(tIV[1]),size(traces,2),size(IV_true,1)))
             @sync Threads.@threads for byte in 1:size(IV_true,1)
                 # "\e[" is "Control Sequence Initiator"
                 print(iv," byte:\e[$(byte*3-(byte÷10+1))C$(byte)\r")
-                key_guesses[:,:,byte] = key_guessing(tIV[byte], Traces)
+                key_guesses[:,:,byte]   = key_guessing(tIV[byte], traces)
                 @views GEdict[iv][byte] = guessing_entropy( key_guesses[:,:,byte], IV_true[byte,:])
                 @views SRdict[iv][byte] = success_rate(     key_guesses[:,:,byte], IV_true[byte,:])
             end
