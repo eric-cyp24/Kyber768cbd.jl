@@ -3,11 +3,13 @@ scratchTracesDIR    = "/local/scratch/cyp24/Lab/Kyber768/Traces/"
 bigscratchTracesDIR = "/local/bigscratch/cyp24/Lab/Kyber768/Traces/"
 ext1TracesDIR       = "/local/ext1/Kyber768/Traces/"
 ###
-TracesDIROs = joinpath(@__DIR__, "../data/Traces-Os/")
-TracesDIRO1 = joinpath(@__DIR__, "../data/Traces-O1/")
-TracesDIRO3 = joinpath(@__DIR__, "../data/Traces-O3/")
-TMPFILE     = ispath("/local/scratch/cyp24/") ? "/local/scratch/cyp24/Kyber768cbd.jl.tmp" :
-                                                joinpath(@__DIR__, "../data/Kyber768.jl.tmp")
+DataDIR     = normpath(@__DIR__, "../data/")
+TracesDIROs = joinpath(DataDIR, "Traces-Os/")
+TracesDIRO1 = joinpath(DataDIR, "Traces-O1/")
+TracesDIRO3 = joinpath(DataDIR, "Traces-O3/")
+TracesDIR   = joinpath(DataDIR, "Traces/")
+TMPDIR      = ispath("/local/scratch/cyp24/") ? "/local/scratch/cyp24/jl_tmp/" : joinpath(DataDIR, "tmp/")
+TMPFILE     = joinpath( TMPDIR, "Kyber768cbd.jl.tmp")
 ###
 ### Parameters ##########
 deviceslist = [:DK1, :DK2, :FN1, :FN2, :MS1, :MS2, :RS1, :RS2]
@@ -90,7 +92,6 @@ devicespools = Dict(:noRS2 => [:DK1, :DK2, :FN1, :FN2, :MS1, :MS2, :RS1],
                     :noFN1 => [:DK1, :DK2, :FN2, :MS1, :MS2, :RS1, :RS2],
                     :noDK2 => [:DK1, :FN1, :FN2, :MS1, :MS2, :RS1, :RS2],
                     :noDK1 => [:DK2, :FN1, :FN2, :MS1, :MS2, :RS1, :RS2]);
-
 
 
 ### end of Parameters ###
