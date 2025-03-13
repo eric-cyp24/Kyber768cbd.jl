@@ -2,13 +2,13 @@ using StatsBase:sample
 
 # Profiling for Kyber768 with targeted intermediate variables: Buf, XY(β), X, Y, S
 function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothing, Buf=nothing, XY=nothing,
-                            POIe_left=0, POIe_right=0, nicv_th=0.001, buf_nicv_th=0.004, nvalid=nothing)
+                            POIe_left=0, POIe_right=0, nicv_th=0.001, buf_nicv_th=0.004, nvalid=nothing, skipexist::Bool=true)
     if !isnothing(X)
         numofcomponents, priors = 3, :uniform
         fn = "Templates_X_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
         outfile = joinpath(OUTDIR, fn)
         println("profiling for X: $outfile")
-        if !isfile(outfile)
+        if !(skipexist && isfile(outfile))
             Templates_X = runprofiling( X, Traces; nicv_th, POIe_left, POIe_right,
                                                    priors, numofcomponents, outfile, nvalid);
         end
@@ -19,7 +19,7 @@ function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothi
         fn = "Templates_Y_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
         outfile = joinpath(OUTDIR, fn)
         println("profiling for Y: $outfile")
-        if !isfile(outfile)
+        if !(skipexist && isfile(outfile))
             Templates_Y = runprofiling( Y, Traces; nicv_th, POIe_left, POIe_right,
                                                    priors, numofcomponents, outfile, nvalid);
         end
@@ -30,7 +30,7 @@ function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothi
         fn = "Templates_S_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
         outfile = joinpath(OUTDIR, fn)
         println("profiling for S: $outfile")
-        if !isfile(outfile)
+        if !(skipexist && isfile(outfile))
             Templates_S = runprofiling( S, Traces; nicv_th, POIe_left, POIe_right,
                                                    priors, numofcomponents, outfile, nvalid);
         end
@@ -41,7 +41,7 @@ function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothi
         fn = "Templates_Buf_proc_nicv$(string(buf_nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
         outfile = joinpath(OUTDIR, fn)
         println("profiling for Buf: $outfile")
-        if !isfile(outfile)
+        if !(skipexist && isfile(outfile))
             Templates_Buf = runprofiling( Buf, Traces; nicv_th=buf_nicv_th, POIe_left, POIe_right,
                                                        priors, numofcomponents, outfile, nvalid);
         end
@@ -52,7 +52,7 @@ function Kyber768_profiling(INDIR, OUTDIR, Traces; X=nothing, Y=nothing, S=nothi
         fn = "Templates_XY_proc_nicv$(string(nicv_th)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
         outfile = joinpath(OUTDIR, fn)
         println("profiling for XY: $outfile")
-        if !isfile(outfile)
+        if !(skipexist && isfile(outfile))
             Templates_XY = runprofiling( XY, Traces; nicv_th, POIe_left, POIe_right,
                                                      priors, numofcomponents, outfile, nvalid);
         end

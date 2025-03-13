@@ -78,16 +78,17 @@ function writeTemplates(filename::AbstractString, templatepath::AbstractString; 
     end
 end
 
-function tracesnormalize(Traces::AbstractArray, template::Template; TMPFILE=nothing)
+function tracesnormalize(Traces::AbstractArray, template::Template; memmap::Bool=false, TMPFILE=nothing)
     traces = reshape(Traces, size(Traces,1), :)
-    if isnothing(TMPFILE)
+    if memmap
+        fname, f = isnothing(TMPFILE) ? mktemp() : (TMPFILE, open(TMPFILE, "w+"))
+        Traces_mmap    = mmap(f, typeof(traces), size(traces))
+        Traces_mmap[:] = traces
+        trace_normalize!(Traces_mmap,template)
+        close(f)
+        return open(fname) do f mmap(f, typeof(Traces), size(Traces)) end
+    else
         return reshape( trace_normalize(traces,template), size(Traces))
-    else # use memmap
-        return open(TMPFILE,"w+") do f
-           Traces_mmap    = mmap(f, typeof(traces), size(traces))
-           Traces_mmap[:] = traces
-           reshape( trace_normalize!(Traces_mmap,template), size(Traces))
-        end
     end
 end
 
@@ -122,7 +123,7 @@ function Templates_EMadj!(tIV::Vector{Template}, iv::Symbol, Traces::AbstractMat
         end
     end
     print("\r                                                             \r")
-    EMerror || println("\e[1A\r                      \r") # erase EM adjust line
+    EMerror || print("\e[1A\r                      \r") # erase EM adjust line
     return tIV
 end
 

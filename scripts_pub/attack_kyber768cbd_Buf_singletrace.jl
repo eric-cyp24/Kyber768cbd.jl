@@ -54,8 +54,8 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     # Trace normaliztion
     if TracesNormalization
         print("normalizing target traces...    ")
-        usememmap = Sys.free_memory() < sizeof(Traces)*2
-        Traces = tracesnormalize(Traces, tBuf[1]; TMPFILE= usememmap ? TMPFILE : nothing)
+        # use memmap when free RAM is low
+        Traces = tracesnormalize(Traces, tBuf[1]; memmap=Sys.free_memory()<sizeof(Traces)*2, TMPFILE)
         println("Done!")
     end
 
@@ -231,14 +231,9 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    for i in 0:20
-        if !isfile(TMPFILE*".$i")
-            global TMPFILE *= ".$i"
-            touch(TMPFILE)
-            break
-        end
-    end
+    mkpath(TMPDIR)
+    global TMPFILE, io = mktemp(TMPDIR); close(io)
     println("TMPFILE: ",TMPFILE)
     main()
-    rm(TMPFILE)
+    isempty(readdir(TMPDIR)) && rm(TMPDIR)
 end

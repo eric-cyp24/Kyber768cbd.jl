@@ -6,6 +6,7 @@ import TemplateAttack
 ### Parameters ##########
 include("Parameters.jl")
 TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces/") )
+skipexist = false
 ###
 
 Dir        = DirHPFOs
@@ -36,7 +37,7 @@ function main()
         # profiling
         println("*** Device: $dev *************************")
         secs = @elapsed Kyber768_profiling(INDIR, OUTDIR, Traces; X, Y, S, Buf, XY,
-                                           POIe_left, POIe_right, nicv_th, buf_nicv_th)
+                                           POIe_left, POIe_right, nicv_th, buf_nicv_th, skipexist)
         ts = Time(0) + Second(floor(secs))
         println("time: $ts -> profiling $TgtDir")
         println("**********************************************************")
@@ -44,15 +45,10 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    for i in 0:20
-        if !isfile(TMPFILE*".$i")
-            global TMPFILE *= ".$i"
-            TemplateAttack.TMPFILE = TMPFILE
-            touch(TMPFILE)
-            break
-        end
-    end
+    mkpath(TMPDIR)
+    global TMPFILE, io = mktemp(TMPDIR); close(io)
+    TemplateAttack.TMPFILE = TMPFILE
     println("TMPFILE: ",TMPFILE)
     main()
-    rm(TMPFILE)
+    isempty(readdir(TMPDIR)) && rm(TMPDIR)
 end

@@ -6,6 +6,7 @@ include("Parameters.jl")
 ntraces   = 192000
 trlen     = 10440
 ntest     = 500
+skipexist = true
 ###
 
 Dir = DirHPFOs
@@ -36,7 +37,7 @@ function main()
         # profiling on pooled traces
         println("*** Device: $idx *************************")
         secs = @elapsed Kyber768_profiling(MixDIR, OUTDIR, Traces; Buf, X, Y, S, XY, nvalid,
-                                           POIe_left, POIe_right, nicv_th, buf_nicv_th)
+                                           POIe_left, POIe_right, nicv_th, buf_nicv_th, skipexist)
         ts = Time(0) + Second(floor(secs))
         println("time: $ts -> profiling $devices")
         println("**********************************************************")
@@ -52,15 +53,10 @@ function main()
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    for i in 0:20
-        if !isfile(TMPFILE*".$i")
-            global TMPFILE *= ".$i"
-            TemplateAttack.TMPFILE = TMPFILE
-            touch(TMPFILE)
-            break
-        end
-    end
+    mkpath(TMPDIR)
+    global TMPFILE, io = mktemp(TMPDIR); close(io)
+    TemplateAttack.TMPFILE = TMPFILE
     println("TMPFILE: ",TMPFILE)
     main()
-    rm(TMPFILE)
+    isempty(readdir(TMPDIR)) && rm(TMPDIR)
 end
