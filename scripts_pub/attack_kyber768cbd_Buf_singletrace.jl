@@ -91,7 +91,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     # test Template -> write s_guess, Successrate, total/single-trace
     begin println("Single-Trace Attack...          ")
     attacksecs = @elapsed begin
-        S_guess = singletraceattacks(Traces, tBuf; S_true, showprogress=true)
+        S_guess = singletraceattacks(Traces; tBuf, S_true, showprogress=true)
     end
     result  = (S_guess.==S_true)
     acc     = sum(result)/length(result)
