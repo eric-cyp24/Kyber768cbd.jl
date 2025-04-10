@@ -3,9 +3,12 @@ using CRC32c:crc32c
 using Mmap:mmap
 
 ### Parameters ##########
-url          = "https://www.cl.cam.ac.uk/~cyp24/Traces-Os-pub/"
-TracesDIR    = normpath( joinpath(@__DIR__, "../data/Traces/") )
-checksumfile = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
+url            = "https://www.cl.cam.ac.uk/research/security/datasets/kyber/data/"
+TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces/") )
+checksumfile   = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
+checksumfile_p = joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5")
+checksumfile_a = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
+checksumfile_R = joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5")
 ###
 
 function parse_commandline()
@@ -36,9 +39,9 @@ end
 Given the paths and checksums from `h5file`, download data files from `urlbase` to `dirbase`
 """
 function downloaddata(h5file::T, urlbase::T, dirbase::T) where T <: AbstractString
-    print("loading checksum file: ",h5file,"   \r")
+    print("loading checksum file: ",h5file,"    \e[K\r")
     h5open(h5file) do h5
-        println("downloading files from: $urlbase")
+        println("downloading files from: ",urlbase,"\e[K")
         for path in keys(h5["/"])
             walkh5(path; h5, urlbase, dirbase)
         end
@@ -104,11 +107,11 @@ function main()
 
     # download data
     if args["profiling"]
-        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5"), url, TracesDIR)
+        downloaddata(checksumfile_p, url, TracesDIR)
     elseif args["attack"]
-        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5"), url, TracesDIR)
+        downloaddata(checksumfile_a, url, TracesDIR)
     elseif args["Results"]
-        downloaddata(joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5"), url, TracesDIR)
+        downloaddata(checksumfile_R, url, TracesDIR)
     else
         downloaddata(checksumfile, url, TracesDIR)
     end

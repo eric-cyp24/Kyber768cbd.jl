@@ -6,15 +6,15 @@ using Kyber768cbd:emalg_addprocs, rmprocs, singletraceattacks, Templates_EMadj!
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = TracesDIRO3
+TracesDIR = TracesDIROs
 numproc   = Sys.CPU_THREADS÷2  # Number of multi-process for EM-adj
 skipexist = true
 ###
 
-tgtlist, tpllist, pooltpllist = deviceslist, [], devpoolsidx #deviceslist, deviceslist, devpoolsidx
-tplDir  = DirHPFO3  # DirHPFnew
-tgtDir  = DirHPFO3  # DirHPFnew
-postfix = "_test_K"     # _test_E or _test_K
+tgtlist, tpllist, pooltpllist = deviceslist, deviceslist, devpoolsidx #deviceslist, deviceslist, devpoolsidx
+tplDir  = DirHPFOs  # DirHPFnew
+tgtDir  = DirHPFOs  # DirHPFnew
+postfix = "_test_E"     # _test_E or _test_K
 POIe_left, POIe_right = 40, 80
 nicvth   , bufnicvth  = 0.001, 0.004
 num_epoch, buf_epoch  = 30, 20

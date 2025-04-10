@@ -1,7 +1,7 @@
 
-scratchTracesDIR    = "/local/scratch/cyp24/Lab/Kyber768/Traces/"
-bigscratchTracesDIR = "/local/bigscratch/cyp24/Lab/Kyber768/Traces/"
-ext1TracesDIR       = "/local/ext1/Kyber768/Traces/"
+scratchTracesDIR    = "/local/scratch/cyp24/Lab/Kyber768/"
+bigscratchTracesDIR = "/local/bigscratch/cyp24/Lab/Kyber768/"
+ext1TracesDIR       = "/local/ext1/Kyber768/"
 ###
 DataDIR     = normpath(@__DIR__, "../data/")
 TracesDIROs = joinpath(DataDIR, "Traces-Os/")

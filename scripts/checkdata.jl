@@ -3,7 +3,7 @@ using CRC32c:crc32c
 using Mmap:mmap
 
 ### Parameters ##########
-url          = "https://www.cl.cam.ac.uk/~cyp24/Traces-Os-pub/"
+url          = "https://www.cl.cam.ac.uk/research/security/datasets/kyber/data/"
 TracesDIR    = normpath( joinpath(@__DIR__, "../data/Traces/") )
 checksumfile = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
 ## generate checksum file
