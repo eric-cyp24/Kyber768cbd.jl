@@ -4,7 +4,7 @@ using HDF5, Plots, ColorSchemes #mapc, colorschemes
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = TracesDIROs #bigscratchTracesDIR or scratchTracesDIR
+TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces/") )
 ###
 # key: (TraceNormalize, EMAdjust)
 adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
@@ -14,7 +14,7 @@ adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
 
 tplDir, tgtDir  = DirHPFOs, DirHPFOs
 IVs             = [:Buf]        #[:Buf, :XY, :X, :Y, :S] 
-method          = :marginalize # :marginalize or :BP
+method          = :marginalize 
 POIe_left, POIe_right = 40, 80
 
 OUTDIR          = "results/"
@@ -24,7 +24,6 @@ Encapsfname     = "Encaps_Multi-Board_Single-Trace_Attack_Success_Rate.tex"
 
 function resulth5name(;IVs::Vector{Symbol}, method=method, POIe_left=POIe_left, POIe_right=POIe_right, TemplateDir)
     return "$(method)_$(join(IVs))_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
-    return "Result_with_Template_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
 end
 
 function getSR(h5file, adjtype)  
@@ -75,14 +74,14 @@ end
 function latextablewrapper(;part, caption="", label="")
     txtline = ""
     if part == :begin
-        txtline  = "%\\begin{table}[H]\n%\\centering\n"
-        txtline *= "%\\caption{$(caption)}$(isempty(label) ? "" : " \\label{$(label)}")\n"
+        txtline  = "\\begin{table}[H]\n%\\centering\n"
+        txtline *= "\\caption{$(caption)}$(isempty(label) ? "" : " \\label{$(label)}")\n"
         txtline *= "\\begin{adjustbox}{width=1\\textwidth}\n"
         txtline *= "\\begin{tabular}{V{4} c V{2} c|c|c|c|c|c|c|c||c|c|c|c|c|c|c|c V{4}}\n"
     elseif part == :end
         txtline  = "\\end{tabular}\n"
         txtline *= "\\end{adjustbox}\n"
-        txtline *= "%\\end{table}\n"
+        txtline *= "\\end{table}\n"
     end
     return txtline
 end
@@ -135,7 +134,7 @@ end
 function result2textable(outfile::AbstractString, postfix=postfix; caption=caption, IVs=IVs)
     
     # load data
-    print("loading Traces...        \r") # somehow print("... \r") cause Segmentation fault when exiting...???
+    print("loading results...        \r") # somehow print("... \r") cause Segmentation fault when exiting...???
     resulttables = Dict()
     for adjtype in [(0,0,0),(0,0,1),(1,0,0),(1,0,1),(0,1,0),(0,1,1)]
         (TraceNormalize, PooledDevices, EMAlg) = adjtype
@@ -171,13 +170,14 @@ function main()
     println("Multi-device single-trace attacks: templates from KeyGen -> to KeyGen targets")
     postfix  = "_test_K"
     outfile  = joinpath(OUTDIR, KeyGenfname)
-    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{KenGen} from \\texttt{KeyGen} templates."
+    caption  = "Single-trace attack success rate of {\\Kyber}768.\\texttt{KenGen} from \\texttt{KeyGen}-\$\\mathit{$(join(IVs," ,"))}\$ templates."
     result2textable(outfile, postfix; caption, IVs)
 
     println("Multi-device single-trace attacks: templates from KeyGen -> to Encaps targets")
     postfix  = "_test_E"
     outfile  = joinpath(OUTDIR, Encapsfname)
-    caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
+    caption  = "Single-trace attack success rate of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen}-\$\\mathit{$(join(IVs," ,"))}\$ templates."
+    #caption  = "Single-trace attack success rate by marginalize $(join(IVs," ,")) of {\\Kyber}768.\\texttt{Encaps} from \\texttt{KeyGen} templates."
     result2textable(outfile, postfix; caption, IVs)
 end
 

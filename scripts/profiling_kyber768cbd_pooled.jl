@@ -6,7 +6,6 @@ include("Parameters.jl")
 ntraces   = 192000
 trlen     = 10440
 ntest     = 500
-TracesDIR = TracesDIROs
 skipexist = true
 ###
 
@@ -15,9 +14,6 @@ POIe_left, POIe_right = 40, 80
 nicv_th, buf_nicv_th  = 0.001, 0.004
 #######################
 
-
-srcDir(dev) = joinpath(TracesDIR, Dir[dev],"lanczos2_25/")
-pooledDir(devices)=joinpath("SOCKET_HPF/Pooled/Pooled_HPF/", join(sort(String.(devices)),"_")*"/")
 
 function main()
     # profiling for mixed traces

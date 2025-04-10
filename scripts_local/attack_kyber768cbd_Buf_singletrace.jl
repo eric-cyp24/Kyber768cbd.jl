@@ -6,28 +6,21 @@ using Kyber768cbd:emalg_addprocs, rmprocs, singletraceattacks, Templates_EMadj!
 
 ### Parameters ##########
 include("Parameters.jl")
-numproc   = Sys.CPU_THREADS÷2  # Number of multi-process for EM adjustment
-skipexist = false
+TracesDIR = TracesDIROs
+numproc   = Sys.CPU_THREADS÷2  # Number of multi-process for EM-adj
+skipexist = true
 ###
 
-tgtlist, tpllist, pooltpllist = [:MS2], deviceslist, devpoolsidx #deviceslist, deviceslist, devpoolsidx
+tgtlist, tpllist, pooltpllist = deviceslist, deviceslist, devpoolsidx #deviceslist, deviceslist, devpoolsidx
 tplDir  = DirHPFOs  # DirHPFnew
 tgtDir  = DirHPFOs  # DirHPFnew
-postfix = "_test_K"     # _test_E or _test_K
+postfix = "_test_E"     # _test_E or _test_K
 POIe_left, POIe_right = 40, 80
 nicvth   , bufnicvth  = 0.001, 0.004
 num_epoch, buf_epoch  = 30, 20
-method  = :marginalize
+method  = :marginalize  #:marginalize or :BP
 ### end of Parameters ###
 
-function parse_commandline()
-    s = ArgParseSettings()
-    @add_arg_table! s begin
-        "--targetOP", "--OP"
-            help = "select the targeted Kyber operation: {KeyGen|Encaps}"
-    end
-    return parse_args(s)
-end
 
 function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::AbstractString; resulth5overwrite::Bool=false, method=:marginalize,
                              TracesNormalization::Bool=false, EMadjust::Bool=false, evalGESR::Bool=true, num_epoch=num_epoch, buf_epoch=buf_epoch,
@@ -91,7 +84,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     # test Template -> write s_guess, Successrate, total/single-trace
     begin println("Single-Trace Attack...          ")
     attacksecs = @elapsed begin
-        S_guess = singletraceattacks(Traces; tBuf, S_true, showprogress=true)
+        S_guess = singletraceattacks(Traces, tBuf; S_true, showprogress=true)
     end
     result  = (S_guess.==S_true)
     acc     = sum(result)/length(result)
@@ -147,18 +140,6 @@ end
 
 
 function main()
-
-    args = parse_commandline()
-    isnothing(args["targetOP"]) || begin
-        targetOP = lowercase(args["targetOP"])
-        if targetOP == "keygen" || targetOP == "k"
-            global postfix = "_test_K"
-        elseif targetOP == "encaps" || targetOP == "e"
-            global postfix = "_test_E"
-        else
-            global postfix = "_test_K"
-        end
-    end
 
     newworkers = emalg_addprocs(numproc)
     for tgtidx in tgtlist

@@ -28,27 +28,27 @@ The data will be downloaded into the folder: `data/Traces/`.\
 \* Note that, the **dataset size is about 30GB**, please make sure you have
 enough disk space left.
 ```
-$ julia --project scripts_pub/downloaddata.jl
+$ julia --project scripts/downloaddata.jl
 ```
 \* Or you can download the required datasets for each following step individually
 and remove them afterward, which would reduce storage requirement down to **17GB**.
 ```
-$ julia --project scripts_pub/downloaddata.jl --profiling    # require 7.5GB
-$ julia --project scripts_pub/downloaddata.jl --attack       # require 4.6GB
+$ julia --project scripts/downloaddata.jl --profiling    # require 7.5GB
+$ julia --project scripts/downloaddata.jl --attack       # require 4.6GB
 
 ## optional: attack results from other target devices ##
-$ julia --project scripts_pub/downloaddata.jl --Results      # require 17GB
+$ julia --project scripts/downloaddata.jl --Results      # require 17GB
 ```
 Run the following Julia script to generate LaTeX table source code. Then, use the
 `pdflatex` tool to generate the table below as the `results/SuccessRateTables.pdf`
 file.
 ```
-$ julia --project scripts_pub/h5result2latextable_multiboardsingletrace.jl
-$ pdflatex -output-directory results scripts_pub/SuccessRateTables.tex
+$ julia --project scripts/h5result2latextable_multiboardsingletrace.jl
+$ pdflatex -output-directory results scripts/SuccessRateTables.tex
 ```
 Alternatively, you can paste the generated LaTeX codes (`results/*Success_Rate.tex`)
 into a LaTeX editor, and you should see the tables:
-![Success Rate Table](scripts_pub/LaTeX_tables.png)
+![Success Rate Table](scripts/LaTeX_tables.png)
 
 Note that, the MS2 columns are incomplete, thus shown as `NaN` in the tables.
 You can complete the MS2 columns by:
@@ -64,20 +64,20 @@ The templates will be stored in the folder:
 `data/Traces-pub/SOCKET_HPF/DK2/test_20241219/lanczos2_25/Templates_POIe40-80/`.
 
 ```
-$ julia --project scripts_pub/downloaddata.jl --profiling
-$ julia --project scripts_pub/profiling_kyber768cbd.jl
+$ julia --project scripts/downloaddata.jl --profiling
+$ julia --project scripts/profiling_kyber768cbd.jl
 ```
 
 
 ## Single-trace attacks
 Run the single-trace attacks on the MS2 target device:
 ```
-$ julia --project scripts_pub/downloaddata.jl --attack
-$ julia --project scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
+$ julia --project scripts/downloaddata.jl --attack
+$ julia --project scripts/attack_kyber768cbd_Buf_singletrace.jl
 ```
 You can speed up the attack by running Julia with multi-thread:
 ```
-$ julia --project -t4 scripts_pub/attack_kyber768cbd_Buf_singletrace.jl
+$ julia --project -t4 scripts/attack_kyber768cbd_Buf_singletrace.jl
 ```
 The multi-thread argument `-t4` tells Julia to execute with 4 threads.
 Based on your computer's hardware resources, you can either speed up the
@@ -102,7 +102,7 @@ julia> resulth5 = h5open("data/path/to/result.h5")
 For attacking the Encaps operation (Table 3 above), run the same attack
 script with the additional command line argument: `--targetOP Encaps`
 ```
-$ julia --project scripts_pub/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+$ julia --project scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
 ```
 
 
@@ -111,18 +111,18 @@ To view the single-trace attack results, run the following code (again) to
 generate the `results/SuccessRateTables.pdf` with the newly produced success
 rates:
 ```
-$ julia --project scripts_pub/h5result2latextable_multiboardsingletrace.jl
-$ pdflatex -output-directory results scripts_pub/SuccessRateTables.tex
+$ julia --project scripts/h5result2latextable_multiboardsingletrace.jl
+$ pdflatex -output-directory results scripts/SuccessRateTables.tex
 ```
 
 
 ## Adaptive template attack evaluation
-![EM adjustment XY](scripts_pub/EMadj_fig_XY.png)
+![EM adjustment XY](scripts/EMadj_fig_XY.png)
 
 To view the effect of the EM-based template adjustment, run the following
 script:
 ```
-$ julia --project scripts_pub/figure_emadj_templates.jl
+$ julia --project scripts/figure_emadj_templates.jl
 ```
 to generate the before-and-after figures as shown above. The two figures
 will be stored in the `results/` folder as the
@@ -131,16 +131,16 @@ files.
 
 If you want to see the effect of EM template adjustment on a lower-leakage
 intermediate variable (iv), modify the `Parameters` section of
-`scripts_pub/figure_emadj_templates.jl` by:
+`scripts/figure_emadj_templates.jl` by:
 * changing the targeted variable `iv` from `:XY` to `:X` at line 13.
 * i.e. `iv, nicvth = :XY, 0.001` &#x1F852; `iv, nicvth = :X , 0.001`
 
 Then, run the plotting script again:
 ```
-$ julia --project scripts_pub/figure_emadj_templates.jl
+$ julia --project scripts/figure_emadj_templates.jl
 ```
 You should now see the two new figures below, also in the `results/` folder.
-![EM adjustment X](scripts_pub/EMadj_fig_X.png)
+![EM adjustment X](scripts/EMadj_fig_X.png)
 
 
 

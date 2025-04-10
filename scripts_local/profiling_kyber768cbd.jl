@@ -5,15 +5,15 @@ import TemplateAttack
 
 ### Parameters ##########
 include("Parameters.jl")
-TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces/") )
-skipexist = false
+TracesDIR = normpath( joinpath(@__DIR__, "../data/Traces-O3/") )
+skipexist = true
 ###
 
-Dir        = DirHPFOs
-Targetlist = [:DK2] #deviceslist
+Dir        = DirHPFO3
+Targetlist = [:RS1, :RS2] #deviceslist
 POIe_left, POIe_right  = 40, 80
 nicv_th  , buf_nicv_th = 0.001, 0.004
-IVs        = [:Buf, :XY, :X] #[:Buf, :XY, :X, :Y, :S]
+IVs        = [:Buf, :XY, :X, :Y, :S] #[:Buf, :XY, :X, :Y, :S]
 #########################
 
 
@@ -33,6 +33,10 @@ function main()
         Y      = :Y   in IVs ? loaddata( joinpath(INDIR,   "Y_proc.h5") ) : nothing
         S      = :S   in IVs ? loaddata( joinpath(INDIR,   "S_proc.h5") ) : nothing
         XY     = :XY  in IVs ? loaddata( joinpath(INDIR,  "XY_proc.h5") ) : nothing
+        if XY != (X .+ (Y .<<2))
+            println("something is swong with XY_proc.h5")
+            XY = (X .+ (Y .<<2))
+        end
 
         # profiling
         println("*** Device: $dev *************************")
