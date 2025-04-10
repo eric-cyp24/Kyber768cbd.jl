@@ -11,7 +11,6 @@ skipexist = false
 ###
 
 tgtlist, tpllist, pooltpllist = [:MS2], deviceslist, devpoolsidx #deviceslist, deviceslist, devpoolsidx
-tgtlist, tpllist, pooltpllist = [:MS2], [:DK1], [] #deviceslist, deviceslist, devpoolsidx
 tplDir  = DirHPFOs  # DirHPFnew
 tgtDir  = DirHPFOs  # DirHPFnew
 postfix = "_test_K"     # _test_E or _test_K
