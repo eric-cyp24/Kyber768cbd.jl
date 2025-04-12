@@ -114,16 +114,24 @@ function latextableheader2(headers::AbstractVector; nrow=2, endline="\\hlineB{2}
     return lines * endline
 end
 
+function printcell(n, aspercentage, trange)
+    if isnan(n)
+        return ""
+    end
+    if aspercentage
+        return cellcolortxt(n; trange) * @sprintf("%5.1f \\%% ",n*100)
+    else
+        return cellcolortxt(n; trange) * @sprintf("%6.3f ",n)
+    end
+end
+
 function latextablecontent(table::AbstractMatrix, firstcolumn::AbstractVector, aspercentage=true; 
                            endline="\\hlineB{2}\n")
-    rows, trange = [], (aspercentage ? (0.0,1.0) : (findmax(table)[1],findmin(table)[1]))
+    rows = []
+    trange = aspercentage ? (0.0, 1.0) : extrema(table)
     for (b,row) in zip(firstcolumn, eachrow(table))
         txtline  = "{$(String(b))} & "
-        if aspercentage
-            txtline *= join([cellcolortxt(n)*@sprintf("%5.1f \\%% ",n*100) for n in row], "& ")
-        else
-            txtline *= join([cellcolortxt(n;trange)*@sprintf("%6.3f ",n)   for n in row], "& ")
-        end
+        txtline *= join([printcell(n, aspercentage, trange) for n in row], "& ")
         txtline *= " \\\\\n"
         push!(rows, txtline)
     end

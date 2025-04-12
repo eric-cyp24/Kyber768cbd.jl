@@ -23,7 +23,7 @@ function parse_commandline()
         "--attack", "-a"
             action = :store_true
             help   = "download data for attack (MS2 devices & Template files)"
-        "--Results", "-r"
+        "--results", "-r"
             action = :store_true
             help   = "download result files"
     end

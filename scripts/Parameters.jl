@@ -1,6 +1,6 @@
 
 ###
-DataDIR     = normpath(@__DIR__, "../data/")
+DataDIR     = get(ENV, "DATA_DIR", normpath(@__DIR__, "../data/"))
 TracesDIROs = joinpath(DataDIR, "Traces-Os/")
 TracesDIRO1 = joinpath(DataDIR, "Traces-O1/")
 TracesDIRO3 = joinpath(DataDIR, "Traces-O3/")
