@@ -137,7 +137,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     end
     println("Done!")
 
-    println("Success Rate: ",acc,", Single-Trace Success Rate: ",sr_single_trace)
+    println("Success Rate (accuracy): ",acc,", Single-Trace Success Rate: ",sr_single_trace)
     EMadjust && print("EM adjustment: ",Time(0)+Second(floor(emadjsecs)),"\t")
 	print("Single-Trace Attack: ",Time(0)+Second(floor(attacksecs)),"\t")
 	println("Evaluation: ",Time(0)+Second(floor(evalsecs)),"\n")
