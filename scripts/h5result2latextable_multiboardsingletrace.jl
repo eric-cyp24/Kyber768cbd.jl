@@ -116,7 +116,7 @@ end
 
 function printcell(n, aspercentage, trange)
     if isnan(n)
-        return ""
+        return "\\hspace*{3em}"
     end
     if aspercentage
         return cellcolortxt(n; trange) * @sprintf("%5.1f \\%% ",n*100)

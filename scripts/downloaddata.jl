@@ -110,7 +110,7 @@ function main()
         downloaddata(checksumfile_p, url, TracesDIR)
     elseif args["attack"]
         downloaddata(checksumfile_a, url, TracesDIR)
-    elseif args["Results"]
+    elseif args["results"]
         downloaddata(checksumfile_R, url, TracesDIR)
     else
         downloaddata(checksumfile, url, TracesDIR)
