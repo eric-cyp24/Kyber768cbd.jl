@@ -180,24 +180,21 @@ $ pdflatex -output-directory results scripts/SuccessRateTables.tex
 To view the effect of the EM-based template adjustment, run the following
 script:
 ```
-$ julia --project scripts/figure_emadj_templates.jl
+$ julia --project scripts/figure_emadj_templates.jl --variable XY --output results/traces_and_XY_templates.png
 ```
 to generate the before-and-after figures as shown above. The two figures
 will be stored in the `results/` folder as the
-`traces_and_templates_XY_*.png` and `traces_and_templates_EMadj_XY_*.png`
+`traces_and_XY_templates.png` and `traces_and_XY_templates_EMadj.png`
 files.
 
 If you want to see the effect of EM template adjustment on a lower-leakage
-intermediate variable (iv), modify the `Parameters` section of
-`scripts/figure_emadj_templates.jl` by:
-* changing the targeted variable `iv` from `:XY` to `:X` at line 13.
-* i.e. `iv, nicvth = :XY, 0.001` &#x1F852; `iv, nicvth = :X , 0.001`
-
-Then, run the plotting script again:
+intermediate variable (iv), modify the command line options for the script:
 ```
-$ julia --project scripts/figure_emadj_templates.jl
+$ julia --project scripts/figure_emadj_templates.jl --variable X --output results/traces_and_X_templates.png
 ```
-You should now see the two new figures below, also in the `results/` folder.
+You should now see the two new figures: `traces_and_XY_templates.png` and
+`traces_and_XY_templates_EMadj.png`, also in the `results/` folder, similar
+to the ones shown below.
 ![EM adjustment X](scripts/EMadj_fig_X.png)
 
 
