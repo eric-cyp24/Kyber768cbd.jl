@@ -8,15 +8,15 @@ TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces/") )
 checksumfile   = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
 checksumfile_p = joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5")
 checksumfile_a = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
-checksumfile_R = joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5")
+checksumfile_r = joinpath(@__DIR__, "Traces-Os-pub-Results-checksum.h5")
 ###
 
 function parse_commandline()
     s = ArgParseSettings()
     @add_arg_table! s begin
-        "--all"
+        "--quiet", "-q"
             action = :store_true
-            help   = "download all the required data"
+            help   = "supress printing of the file structure"
         "--profiling", "-p"
             action = :store_true
             help   = "download data for profiling (DK2 device)"
@@ -34,42 +34,42 @@ end
 ### download data files ########################
 
 """
-    downloaddata(h5file::T, urlbase::T, dirbase::T) where T <: AbstractString
+    downloaddata(h5file::T, urlbase::T, dirbase::T; quiet=false) where T <: AbstractString
 
 Given the paths and checksums from `h5file`, download data files from `urlbase` to `dirbase`
 """
-function downloaddata(h5file::T, urlbase::T, dirbase::T) where T <: AbstractString
+function downloaddata(h5file::T, urlbase::T, dirbase::T; quiet=false) where T <: AbstractString
     print("loading checksum file: ",h5file,"    \e[K\r")
     h5open(h5file) do h5
         println("downloading files from: ",urlbase,"\e[K")
         for path in keys(h5["/"])
-            walkh5(path; h5, urlbase, dirbase)
+            walkh5(path; h5, urlbase, dirbase, quiet)
         end
         println("\nfiles downloaded to: $dirbase\n")
     end
 end
 
 """
-    walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T) where T<:AbstractString
+    walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T, quiet=false) where T<:AbstractString
 
 Triverse the h5 file, download from `utlbase` to `dirbase` if the file doesn't exist
 """
-function walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T) where T<:AbstractString
+function walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T, quiet=false) where T<:AbstractString
     if h5[path] isa HDF5.Group
         mkpath(joinpath(dirbase,path))
-        println("  "^depth, basename(path), "/")
+        quiet || println("  "^depth, basename(path), "/")
         for _path in keys(h5[path])
-            walkh5(joinpath(path,_path); depth=depth+1, h5, urlbase, dirbase)
+            walkh5(joinpath(path,_path); depth=depth+1, h5, urlbase, dirbase, quiet)
         end
     else h5[path] isa HDF5.Dataset
         filename = basename(path)
         checksum = read(h5, path)
         check = downloadfile(path, checksum; urlbase, dirbase)
         if check == 0
-            println("  "^depth, filename, "\t -> already there")
+            quiet || println("  "^depth, filename, "\t -> already there")
         else
             check == checksum || error("something wrong with file: $(joinpath(urlbase,path))")
-            println("  "^depth, filename, "\t -> downloaded")
+            quiet || println("  "^depth, filename, "\t -> downloaded")
         end
     end
 end
@@ -106,16 +106,17 @@ end
 function main()
 
     args = parse_commandline()
+    quiet = args["quiet"]
 
     # download data
     if args["profiling"]
-        downloaddata(checksumfile_p, url, TracesDIR)
+        downloaddata(checksumfile_p, url, TracesDIR; quiet)
     elseif args["attack"]
-        downloaddata(checksumfile_a, url, TracesDIR)
+        downloaddata(checksumfile_a, url, TracesDIR; quiet)
     elseif args["results"]
-        downloaddata(checksumfile_R, url, TracesDIR)
+        downloaddata(checksumfile_r, url, TracesDIR; quiet)
     else
-        downloaddata(checksumfile, url, TracesDIR)
+        downloaddata(checksumfile  , url, TracesDIR; quiet)
     end
 end
 
