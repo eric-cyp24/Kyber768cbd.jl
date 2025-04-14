@@ -1,0 +1,36 @@
+\documentclass[journal=tches,final,floatrow]{iacrtrans}
+
+\usepackage[active,tightpage]{preview}
+
+\usepackage{subfig}
+\usepackage{booktabs}
+% checkout: https://latex-tutorial.com/color-latex/
+\usepackage{colortbl}
+% checkout: https://tex.stackexchange.com/questions/121155/how-to-adjust-a-table-to-fit-on-page
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{diagbox}
+\usepackage{boldline}
+
+\newcommand{\Kyber}{\textsc{Kyber}}
+
+\begin{document}
+
+
+\begin{figure}[t] %[!tbp]
+    \centering
+\begin{preview}
+    \subfloat[Traces and $\beta$ templates in LDA subspace.]{\includegraphics[width=0.5\textwidth]{results/traces_and_XY_templates.png}\label{fig:XY-LDA}}
+    \hfill
+    \subfloat[EM adjusted $\beta$ templates.]{\includegraphics[width=0.5\textwidth]{results/traces_and_XY_templates_EMadj.png}\label{fig:XY-LDA-EM}}
+    \\
+\end{preview}
+\begin{preview}
+    \subfloat[Traces and $x$ templates in LDA subspace.]{\includegraphics[width=0.5\textwidth]{results/traces_and_X_templates.png}\label{fig:X-LDA}}
+    \hfill
+    \subfloat[EM adjusted  $x$ templates.]{\includegraphics[width=0.5\textwidth]{results/traces_and_X_templates_EMadj.png}\label{fig:X-LDA-EM}}
+\end{preview}
+    \caption{EM-based adjustments with DK2 profiling templates and the MS2 target device.}\label{fig:EM-adj}
+\end{figure}
+
+\end{document}
