@@ -119,7 +119,13 @@ function printcell(n, aspercentage, trange)
         return "\\hspace*{3em}"
     end
     if aspercentage
-        return cellcolortxt(n; trange) * @sprintf("%5.1f \\%% ",n*100)
+        percent = @sprintf("%.1f \\%% ",n*100)
+        # left-pad with \phantom{0} to right-align numbers
+        lpad = 9 - length(percent)
+        if lpad > 0
+            percent = "\\phantom{" * "0"^lpad * "}" * percent
+        end
+        return cellcolortxt(n; trange) * percent
     else
         return cellcolortxt(n; trange) * @sprintf("%6.3f ",n)
     end
