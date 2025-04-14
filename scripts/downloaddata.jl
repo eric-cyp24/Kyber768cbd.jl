@@ -89,12 +89,14 @@ function downloadfile(filepath::T, checksum::UInt32; urlbase::T, dirbase::T) whe
         #print(filename, " -> exist")
         return UInt32(0)
     else
-        infostr = "downloading "*filename; n = length(infostr)
+        narrowdisplay = displaysize(stdout)[2] < min(length(filename)+36, 81)
+        infostr = "downloading "*(narrowdisplay ? "file" : filename)
+        n = length(infostr)
         print(infostr,"\r")
         progress = (total::Integer, now::Integer) -> @printf("\e[%dC -> progress: %6.2f %%\r",n, now/total*100)
         Downloads.download(url, outfile; progress=progress)
         #print(infostr," -> done!!            ")
-        print(" "^length(infostr),"                      \r")
+        print(" "^length(infostr),"\e[K\r")
         return crc32c(mmap(outfile))
     end
 end
