@@ -217,11 +217,7 @@ intermediate variable (iv), modify the command line options for the script:
 ```
 $ julia --project scripts/figure_emadj_templates.jl --variable X --output results/traces_and_X_templates.png
 ```
-You should now see the two new figures: `traces_and_XY_templates.png` and
-`traces_and_XY_templates_EMadj.png`, also in the `results/` folder, similar
+You should now see the two new figures: `traces_and_X_templates.png` and
+`traces_and_X_templates_EMadj.png`, also in the `results/` folder, similar
 to the ones shown below.
-![EM adjustment X](scripts/EMAdjustmentFigures1.png)
-
-
-
-
+![EM adjustment X](scripts/EMAdjustmentFigures2.png)
