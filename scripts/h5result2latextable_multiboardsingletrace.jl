@@ -13,8 +13,8 @@ adj_type = Dict((1,1) => "Traces_Normalized_Templates_Adj_EM",
                 (1,0) => "Traces_Normalized")
 
 tplDir, tgtDir  = DirHPFOs, DirHPFOs
-IVs             = [:Buf]        #[:Buf, :XY, :X, :Y, :S] 
-method          = :marginalize 
+IVs             = [:Buf]        #[:Buf, :XY, :X, :Y, :S]
+method          = :marginalize
 POIe_left, POIe_right = 40, 80
 
 OUTDIR          = "results/"
@@ -26,7 +26,7 @@ function resulth5name(;IVs::Vector{Symbol}, method=method, POIe_left=POIe_left, 
     return "$(method)_$(join(IVs))_Result_with_Templates_POIe$(POIe_left)-$(POIe_right)_from_$(replace(TemplateDir,"/"=>"_")[1:end-1]).h5"
 end
 
-function getSR(h5file, adjtype)  
+function getSR(h5file, adjtype)
     adjtype = adjtype in keys(adj_type) ? adj_type[adjtype] : adjtype
     dataset_path = joinpath(adjtype, "success_rate_single_trace")
     return try
@@ -62,7 +62,7 @@ end
 
 
 cs1 = ColorScheme(append!([RGB{Float64}(1,1,1)],colorschemes[:Reds_7][2:6]))
-function cellcolortxt(num::AbstractFloat; alpha=0.75, trange=(0.0,1.0), 
+function cellcolortxt(num::AbstractFloat; alpha=0.75, trange=(0.0,1.0),
                       cscheme::ColorScheme=cs1, reverse=true)
                       #cscheme::ColorScheme=colorschemes[:Reds_5], reverse=true)
     num = isnan(num) ? 0.0 : (num-trange[1]) / trange[2]
@@ -131,7 +131,7 @@ function printcell(n, aspercentage, trange)
     end
 end
 
-function latextablecontent(table::AbstractMatrix, firstcolumn::AbstractVector, aspercentage=true; 
+function latextablecontent(table::AbstractMatrix, firstcolumn::AbstractVector, aspercentage=true;
                            endline="\\hlineB{2}\n")
     rows = []
     trange = aspercentage ? (0.0, 1.0) : extrema(table)
@@ -146,7 +146,7 @@ end
 
 
 function result2textable(outfile::AbstractString, postfix=postfix; caption=caption, IVs=IVs)
-    
+
     # load data
     print("loading results...        \r") # somehow print("... \r") cause Segmentation fault when exiting...???
     resulttables = Dict()
