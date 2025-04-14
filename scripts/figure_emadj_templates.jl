@@ -95,6 +95,24 @@ function genfig(template, traces, IV; outfile=nothing, fileformat=:pdf, anno=not
 end
 
 
+function checkTemplateProjMatrix!(template,axessigns)
+    idx1 = findmax(abs.(template.ProjMatrix[:,1]))[2]
+    flip = (axessigns[1] * template.ProjMatrix[idx1,1]) < 0
+    template.ProjMatrix[:,1] *= (flip ? -1 : 1)
+    template.mean[1] *= (flip ? -1 : 1)
+    for i in keys(template.mvgs)
+        template.mvgs[i].μ[1] *= (flip ? -1 : 1)
+    end
+    idx2 = findmax(abs.(template.ProjMatrix[:,2]))[2]
+    flip = (axessigns[2] * template.ProjMatrix[idx2,2]) < 0
+    template.ProjMatrix[:,2] *= (flip ? -1 : 1)
+    template.mean[2] *= (flip ? -1 : 1)
+    for i in keys(template.mvgs)
+        template.mvgs[i].μ[2] *= (flip ? -1 : 1)
+    end
+end
+
+
 
 function main()
 
@@ -116,6 +134,12 @@ function main()
 
     # load data
     template = loadtemplate(templatefile; byte)
+    # flip the sign of LDA vector to match the ones in our paper
+    if (iv,tplidx,tgtidx,postfix,byte,POIe_left,POIe_right) == (:XY,:DK2,:MS2,"_test_K",1,40,80)
+        checkTemplateProjMatrix!(template,[-1,-1]) # first 2 lda vectors, absmax point sign
+    elseif (iv,tplidx,tgtidx,postfix,byte,POIe_left,POIe_right) == (:X,:DK2,:MS2,"_test_K",1,40,80)
+        checkTemplateProjMatrix!(template,[-1, 1]) # first 2 lda vectors, absmax point sign
+    end
     traces   = loaddata(tracefile)
     traces   = ndims(traces) == 3 ? reshape(traces, size(traces,1), :) : traces
     traces   = LinearAlgebra.mul!(Matrix{Float64}(undef, ndims(template), size(traces,2)), transpose(template.ProjMatrix), traces)
@@ -123,10 +147,10 @@ function main()
     isdir(OUTDIR) || mkpath(OUTDIR)
 
     # generate figures
-    if (iv,tplidx,tgtidx,postfix) == (:XY,:DK2,:MS2,"_test_K")
+    if (iv,tplidx,tgtidx,postfix,byte,POIe_left,POIe_right) == (:XY,:DK2,:MS2,"_test_K",1,40,80)
         anno = (0.465, 0.17, (latexstring("\$β\$ = 4\n\$β\$ = 8"),24))
         genfig(template, traces, IV; outfile, fileformat, size=(1200,800), dpi=300, xlim=(0.15,0.60), ylim=(-0.1,0.2), legendcolumn=2, legend=:topleft, anno)
-    elseif (iv,tplidx,tgtidx,postfix) == (:X,:DK2,:MS2,"_test_K")
+    elseif (iv,tplidx,tgtidx,postfix,byte,POIe_left,POIe_right) == (:X,:DK2,:MS2,"_test_K",1,40,80)
         genfig(template, traces, IV; outfile, fileformat, size=(1200,800), dpi=300, xlim=(0.05,0.11), ylim=(-0.102,-0.062))
     else
         genfig(template, traces, IV; outfile, fileformat)
