@@ -1,3 +1,7 @@
+name = "Kyber768cbd"
+uuid = "ebb0de58-a2e4-4aea-af06-7ed260107cae"
+authors = ["Eric Peng <cyp24@cl.cam.ac.uk>"]
+
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
@@ -16,3 +20,14 @@ TemplateAttack = "80af35ab-4a10-4ad7-a3f0-c5528baba6c8"
 EMAlgorithm = {path = "packages/EMAlgorithm.jl"}
 LeakageAssessment = {path = "packages/LeakageAssessment.jl"}
 TemplateAttack = {path = "packages/TemplateAttack.jl"}
+
+[compat]
+ArgParse = "1.2.0"
+ColorSchemes = "3.27.1"
+Distributions = "0.25.117"
+HDF5 = "0.17.2"
+LaTeXStrings = "1.4.0"
+Mmap = "1.11.0"
+OffsetArrays = "1.15.0"
+Plots = "1.40.9"
+StatsBase = "0.34.4"
