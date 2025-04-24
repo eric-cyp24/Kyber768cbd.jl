@@ -76,15 +76,32 @@ end
 
 #############################
 
-### template portability techniques ###
+### template read/write ###
 
+templatefields = collect(Symbol.(TemplateAttack.templatefields))
+const sharedfields = (:TraceMean, :TraceVar)
+# keep the original template field order, for templates construction
+const uniquefields = deleteat!(copy(templatefields), findall(x->x∈sharedfields, templatefields))
+
+function loadTemplates(filepath::AbstractString; group_path="Templates/")
+    # check if the Vector{Template} is stored in compressed form
+    compressed = h5open(filepath) do h5
+        (sharedfields ⊆ Symbol.(keys(h5[group_path]))) # Base.issubset (⊆) type: \subseteq
+    end
+
+    if compressed
+        return loadTemplates_compressed(filepath; group_path)
+    else
+        numbytes = h5open(filepath) do h5 length(h5[group_path]) end
+        return [loadtemplate(filepath; group_path, byte) for byte in 1:numbytes]
+    end
+end
 function loadTemplates(templateDir::AbstractString, iv::Symbol; nicvth, POIe_left, POIe_right)
     filename = "Templates_$(iv)_proc_nicv$(string(nicvth)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5"
     filepath = joinpath(templateDir, filename)
-    numbytes = h5open(filepath) do h5 length(h5["Templates"]) end
-    return [loadtemplate(filepath; byte) for byte in 1:numbytes]
+    return loadTemplates(filepath)
 end
-function loadTemplates(templateDir::AbstractString; IVs::AbstractVector, nicvth=0.001, bufnicvth=0.004, POIe_left=0, POIe_right=0, verbose=true)
+function loadTemplates(templateDir::AbstractString, IVs::Vector{Symbol}; nicvth, bufnicvth, POIe_left, POIe_right, verbose=true)
     templateDir = normpath(templateDir)
     verbose && println("loading templates from: ",templateDir)
     verbose && print("loading tempates of: ")
@@ -101,16 +118,100 @@ function loadTemplates(templateDir::AbstractString; IVs::AbstractVector, nicvth=
     return length(IVs)==1 ? IVtemplates[1] : IVtemplates
 end
 
+function loadTemplates_compressed(filepath::AbstractString; group_path="Templates/")
+    templates = Vector{Template}()
+    h5open(filepath) do h5
+        # read sharedfields
+        tshared  = [read_dataset(h5, joinpath(group_path, String(n))) for n in sharedfields]
+        numbytes = length(h5[group_path]) - 2
+        for byte in 1:numbytes
+            g = open_group(h5, joinpath(group_path, "byte $byte"))
+            t = [read_dataset(g, String(n)) for n in uniquefields]
+            push!(templates, Template(tshared..., t...))
+        end
+    end
+    return templates
+end
 
-function writeTemplates(filename::AbstractString, templatepath::AbstractString; tBuf=nothing, tX=nothing, tY=nothing, tS=nothing, tXY=nothing)
-    for (iv,templates) in zip([:Buf,:X,:Y,:S, :XY],[tBuf, tX, tY, tS, tXY])
-        isnothing(templates) && continue
-        group_path = joinpath(templatepath,String(iv))
-        for (byte,t) in enumerate(templates)
-            writetemplate(filename, t; group_path, byte)
+
+function writeTemplates(filepath::AbstractString, templates::Vector{Template}; group_path="Templates/", overwrite=false, compressed=false)
+    if compressed
+        writeTemplates_compressed(filepath, templates; group_path, overwrite)
+    else
+        (overwrite && isfile(filepath)) && rm(filepath)
+        for (byte, t) in enumerate(templates)
+            writetemplate(filepath, t; group_path, byte)
         end
     end
 end
+function writeTemplates(filepath::AbstractString, templatepath::AbstractString; tBuf=nothing, tX=nothing, tY=nothing, tS=nothing, tXY=nothing)
+    for (iv,templates) in zip([:Buf,:X,:Y,:S, :XY],[tBuf, tX, tY, tS, tXY])
+        isnothing(templates) && continue
+        group_path = joinpath(templatepath,String(iv))
+        writeTemplates(filepath, templates; group_path)
+    end
+end
+
+function writeTemplates_compressed(filepath::AbstractString, templates::Vector{Template}; group_path="Templates/", overwrite=false)
+    # write templates
+    h5open(filepath, overwrite ? "w" : "cw") do h5
+        writeTemplates_compressed(h5, templates; group_path, overwrite)
+    end
+end
+function writeTemplates_compressed(h5::HDF5.File, templates::Vector{Template}; group_path="Templates/", overwrite=false)
+    # check templates all from the same dataset
+    equalTraceMean = all([templates[1].TraceMean==t.TraceMean for t in templates])
+    equalTraceVar  = all([templates[1].TraceVar ==t.TraceVar  for t in templates])
+    (equalTraceMean && equalTraceVar) || ErrorException("TraceMean or TraceVar have different values, cannot compress")
+
+    haskey(h5, group_path) && delete_object(h5, group_path)
+    g = create_group(h5, group_path)
+    # write shared parts: TraceMean, TraceVar
+    for n in sharedfields
+        write_dataset(g, String(n), getproperty(templates[1],n))
+    end
+    # write individual parts
+    for (byte, t) in enumerate(templates)
+        writetemplate_ldaspace(h5, t; group_path, byte, include_projMatrix=true)
+    end
+end
+
+function writeTemplates_ldaspace(filepath::AbstractString, templates::Vector{Template}; group_path="Templates/", include_projMatrix=false)
+    h5open(filepath, "cw") do h5
+        for (byte, t) in enumerate(templates)
+            writetemplate_ldaspace(h5, t; group_path, byte, include_projMatrix)
+        end
+    end
+end
+
+function writetemplate_ldaspace(h5::HDF5.File, t::Template; group_path="Templates/", byte=0, include_projMatrix=false)
+    template_path = joinpath(group_path, "byte $byte")
+    haskey(h5, template_path) && delete_object(h5, template_path)
+    g = create_group(h5, template_path)
+    labels = sort!(collect(keys(t.mvgs)))
+    mus    = stack([t.mvgs[l].μ for l in labels])
+    sigmas = stack([t.mvgs[l].Σ for l in labels])
+    priors = [t.priors[l] for l in labels]
+    for n in fieldnames(Template)
+        if n in sharedfields
+            continue
+        elseif n == :ProjMatrix
+            include_projMatrix && write_dataset(g, String(n), getproperty(t,n))
+        elseif n == :mvgs
+            write_dataset(g, "labels", labels)
+            write_dataset(g,    "mus",    mus)
+            write_dataset(g, "sigmas", sigmas)
+        elseif n == :priors
+            write_dataset(g, String(n), priors)
+        else
+            write_dataset(g, String(n), getproperty(t,n))
+        end
+    end
+end
+
+
+
+### template portability techniques ###
 
 function tracesnormalize(Traces::AbstractArray, template::Template; memmap::Bool=false, TMPFILE=nothing)
     traces = reshape(Traces, size(Traces,1), :)

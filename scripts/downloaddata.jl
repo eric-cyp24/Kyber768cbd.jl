@@ -5,6 +5,7 @@ using Mmap:mmap
 ### Parameters ##########
 url            = "https://www.cl.cam.ac.uk/research/security/datasets/kyber/data/"
 TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces/") )
+TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces-downloaded/") )
 checksumfile   = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
 checksumfile_p = joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5")
 checksumfile_a = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
@@ -61,7 +62,7 @@ function walkh5(path; depth=0, h5::HDF5.File, urlbase::T, dirbase::T, quiet=fals
         for _path in keys(h5[path])
             walkh5(joinpath(path,_path); depth=depth+1, h5, urlbase, dirbase, quiet)
         end
-    else h5[path] isa HDF5.Dataset
+    elseif h5[path] isa HDF5.Dataset
         filename = basename(path)
         checksum = read(h5, path)
         check = downloadfile(path, checksum; urlbase, dirbase)
@@ -89,7 +90,7 @@ function downloadfile(filepath::T, checksum::UInt32; urlbase::T, dirbase::T) whe
         #print(filename, " -> exist")
         return UInt32(0)
     else
-        narrowdisplay = displaysize(stdout)[2] < min(length(filename)+36, 81)
+        narrowdisplay = displaysize(stdout)[2] < max(length(filename)+36, 81)
         infostr = "downloading "*(narrowdisplay ? "file" : filename)
         n = length(infostr)
         print(infostr,"\r")

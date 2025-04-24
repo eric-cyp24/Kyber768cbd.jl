@@ -29,17 +29,18 @@ function parse_commandline()
     return parse_args(s)
 end
 
-function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::AbstractString; resulth5overwrite::Bool=false, method=:marginalize,
-                             TracesNormalization::Bool=false, EMadjust::Bool=false, evalGESR::Bool=true, num_epoch=num_epoch, buf_epoch=buf_epoch,
-                             nicvth=nicvth, bufnicvth=bufnicvth, POIe_left=POIe_left, POIe_right=POIe_right)
+function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::AbstractString; resulth5overwrite::Bool=false,
+                             method=:marginalize, TracesNormalization::Bool=false, EMadjust::Bool=false, evalGESR::Bool=true,
+                             num_epoch=num_epoch, buf_epoch=buf_epoch, nicvth=nicvth, bufnicvth=bufnicvth,
+                             POIe_left=POIe_left, POIe_right=POIe_right)
     # load buf templates
     print("loading templates...            ")
     tBuf = begin
         TemplateDir = Templateidx in deviceslist ? tplDir[Templateidx] : pooledDir(devicespools[Templateidx])
         TemplateDIR = joinpath(TracesDIR, TemplateDir , "lanczos2_25/", "Templates_POIe$(POIe_left)-$(POIe_right)/")
-        tbuffile    = joinpath(TemplateDIR, "Templates_Buf_proc_nicv$(string(bufnicvth)[2:end])_POIe$(POIe_left)-$(POIe_right)_lanczos2.h5")
-        [loadtemplate(tbuffile; byte) for byte in 1:8 ]
+        loadTemplates(TemplateDIR, :Buf; nicvth=bufnicvth, POIe_left, POIe_right)
     end
+    tBuf_origin = EMadjust ? deepcopy(tBuf) : nothing
     println("Done!")
 
     # load traces (targets)
@@ -80,12 +81,25 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     println("writing result to file: ",outfile)
     ## "w":create & overwite, "cw": create or modify
     h5open(outfile, resulth5overwrite ? "w" : "cw") do h5
-        try delete_object(h5, h5resultpath) catch e end
-    end end
+        haskey(h5, h5resultpath) && delete_object(h5, h5resultpath)
+    end
+    end
 
     # write Templates to result.h5
     print("writing templates...            ")
-    writeTemplates(outfile, joinpath(h5resultpath, "Templates/"); tBuf)
+    group_path = "Templates/Buf/"
+    if EMadjust
+        try
+            loadTemplates(outfile; group_path) == tBuf_origin || writeTemplates(outfile, tBuf_origin; group_path, compressed=true)
+        catch KeyError
+            writeTemplates(outfile, tBuf_origin; group_path, compressed=true)
+        end
+        writeTemplates_ldaspace(outfile, tBuf; group_path=joinpath(h5resultpath,"Templates_LDA/Buf/"), include_projMatrix=false)
+    else
+        resulth5overwrite && writeTemplates(outfile, tBuf; group_path, compressed=true)
+        loadTemplates(outfile; group_path) == tBuf || error("templates in $group_path doesn't match tBuf")
+    end
+
     println("Done!")
 
     # test Template -> write s_guess, Successrate, total/single-trace
@@ -126,7 +140,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     # write SASCA & Single-Trace Attack result
     print("writing single-trace attack result...   ")
     h5open(outfile, "cw") do h5
-        g = try h5[h5resultpath] catch e create_group(h5, h5resultpath) end
+        g = haskey(h5,h5resultpath) ? h5[h5resultpath] : create_group(h5, h5resultpath)
         write(g, "S_guess", S_guess)
         write(g, "success_rate_total", acc) # accuracy
         write(g, "success_rate_single_trace", sr_single_trace)
