@@ -121,7 +121,7 @@ $ pdflatex -output-directory results scripts/SuccessRateTables.tex
 If you downloaded the results for other target devices than MS2 you
 should see these tables:
 
-![Success Rate Table](scripts/LaTeX_tables.png)
+![Success Rate Table](scripts/SuccessRateTables.png)
 
 Note that the MS2 columns are still missing.
 
