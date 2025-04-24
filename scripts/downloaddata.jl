@@ -5,7 +5,6 @@ using Mmap:mmap
 ### Parameters ##########
 url            = "https://www.cl.cam.ac.uk/research/security/datasets/kyber/data/"
 TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces/") )
-TracesDIR      = normpath( joinpath(@__DIR__, "../data/Traces-downloaded/") )
 checksumfile   = joinpath(@__DIR__, "Traces-Os-pub-checksum.h5")
 checksumfile_p = joinpath(@__DIR__, "Traces-Os-pub-profiling-checksum.h5")
 checksumfile_a = joinpath(@__DIR__, "Traces-Os-pub-attack-checksum.h5")
