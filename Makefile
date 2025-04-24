@@ -62,7 +62,4 @@ install_figures:
 	cp results/EMAdjustmentFigures[12].png scripts/
 
 clean:
-	rm -rf data
-	rm -rf results
-	rm -f scripts/SuccessRateTables.*
-	rm -f results/EMAdjustmentFigures*
+	rm -rf data/ results/
