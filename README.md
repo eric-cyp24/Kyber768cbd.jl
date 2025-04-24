@@ -15,7 +15,7 @@ This code was mainly developed and tested on x86-ix64 (64-bit)
 computers running Ubuntu Linux 20.04 or 24.04 with 48 GB RAM. We hope
 it will run on any platform that is [supported by
 Julia](https://julialang.org/downloads/#supported_platforms) and has
-at least 16 GB RAM. About 35 GB disk space would be ideal, but there
+at least 16 GB RAM. About 25 GB disk space would be ideal, but there
 are also ways to run the demo with only about 12 GB disk space.
 
 ## Install Julia
@@ -72,15 +72,15 @@ you have:
 <li>Option 1: if you have the space download all provided data at once with
 
 ```
-$ julia --project scripts/downloaddata.jl                # requires 30 GB
+$ julia --project scripts/downloaddata.jl                # requires 19 GB
 ```
 
 <li>Option 2: download data needed for profiling and attack separately,
 as indicated below, using the options
 
 ```
-$ julia --project scripts/downloaddata.jl --profiling    # requires 7.5 GB
-$ julia --project scripts/downloaddata.jl --attack       # requires 4.6 GB
+$ julia --project scripts/downloaddata.jl --profiling    # requires 8.1 GB
+$ julia --project scripts/downloaddata.jl --attack       # requires 4.9 GB
 ```
 
 right before the profiling and attack steps. You can then remove them
@@ -88,8 +88,8 @@ immediately after the corresponding processing step, to reduce the
 required disk space, using
 
 ```
-$ julia --project scripts/deletedata.jl --profiling      # frees 7.5 GB
-$ julia --project scripts/deletedata.jl --attack         # frees 4.6 GB
+$ julia --project scripts/deletedata.jl --profiling      # frees 8.1 GB
+$ julia --project scripts/deletedata.jl --attack         # frees 4.9 GB
 ```
 
 respectively.
@@ -102,7 +102,7 @@ including all the LDA projections and adjusted template parameters for
 all the other profiling and target device combinations:
 
 ```
-$ julia --project scripts/downloaddata.jl --results      # requires 17 GB
+$ julia --project scripts/downloaddata.jl --results      # requires 6.0 GB
 ```
 
 </ul>
