@@ -19,8 +19,8 @@ THREADOPT=-t4
 option_1: instantiate
 	julia --project scripts/downloaddata.jl
 	julia --project scripts/profiling_kyber768cbd.jl
-	julia --project $THREADOPT scripts/attack_kyber768cbd_Buf_singletrace.jl
-	julia --project $THREADOPT scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
+	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
 	$(MAKE) results/SuccessRateTables.png
 	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
 
@@ -30,8 +30,8 @@ option_2: instantiate
 	julia --project scripts/profiling_kyber768cbd.jl
 	julia --project scripts/deletedata.jl --profiling
 	julia --project scripts/downloaddata.jl --attack
-	julia --project $THREADOPT scripts/attack_kyber768cbd_Buf_singletrace.jl
-	julia --project $THREADOPT scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
+	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
 	julia --project scripts/deletedata.jl --attack
 	$(MAKE) results/SuccessRateTables.png
 	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
