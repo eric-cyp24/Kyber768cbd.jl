@@ -185,7 +185,6 @@ To attack the Encaps operation (Table 3 above), run the same attack
 script with the additional command line argument: `--targetOP Encaps`
 ```
 $ julia --project scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
-$ julia --project scripts/deletedata.jl --attack         # for Option 2 only
 ```
 
 
