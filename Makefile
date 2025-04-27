@@ -32,9 +32,9 @@ option_2: instantiate
 	julia --project scripts/downloaddata.jl --attack
 	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
 	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
-	julia --project scripts/deletedata.jl --attack
 	$(MAKE) results/SuccessRateTables.png
 	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
+	julia --project scripts/deletedata.jl --attack
 
 # install and precompile all Julia dependencies of this project
 instantiate:
