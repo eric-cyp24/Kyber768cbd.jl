@@ -26,7 +26,7 @@ To run this code, you will need [Julia](https://julialang.org/)
 For Linux or macOS, best [install
 Julia](https://julialang.org/downloads/) via the
 [juliaup](https://github.com/JuliaLang/juliaup/blob/main/README.md)
-installation manager, using the following shell command line:
+installation manager using the following shell command line:
 
 ```
 $ curl -fsSL https://install.julialang.org | sh
@@ -69,7 +69,7 @@ you have:
 
 <ul>
 
-<li>Option 1: if you have the space download all provided data at once with
+<li>Option 1: if you have the space, download all provided data at once with
 
 ```
 $ julia --project scripts/downloaddata.jl                # requires 19 GB
@@ -110,7 +110,7 @@ $ julia --project scripts/downloaddata.jl --results      # requires 6.0 GB
 ## Build tables 2 and 3
 
 You can run the following Julia script to generate the LaTeX table source code
-for tables 2 and 3, and `pdflatex` to generate the table below as
+for tables 2 and 3, and `pdflatex` to generate these tables as
 `results/SuccessRateTables.pdf`.
 
 ```
@@ -118,14 +118,12 @@ $ julia --project scripts/h5result2latextable_multiboardsingletrace.jl
 $ pdflatex -output-directory results scripts/SuccessRateTables.tex
 ```
 
-If you downloaded the results for other target devices than MS2 you
-should see these tables:
+If you downloaded the results for other target devices than MS2, you
+should see those columns already completed:
 
 ![Success Rate Table](scripts/SuccessRateTables.png)
 
-Note that the MS2 columns are still missing.
-
-To complete those:
+To complete the still missing MS2 columns:
 - First, build the DK2 profiling templates with the following profiling step.
 - Then, run the single-trace attacks on the MS2 target with templates from all
   devices (DK1–RS2).
@@ -190,7 +188,7 @@ $ julia --project scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encap
 
 ## Generate (LaTeX) tables
 To view the single-trace attack results, run the following code (again) to
-generate the `results/SuccessRateTables.pdf` with the newly produced success
+generate `results/SuccessRateTables.pdf` with the newly produced success
 rates:
 ```
 $ julia --project scripts/h5result2latextable_multiboardsingletrace.jl
@@ -206,17 +204,16 @@ script:
 ```
 $ julia --project scripts/figure_emadj_templates.jl --variable XY --output results/traces_and_XY_templates.png
 ```
-to generate the before-and-after figures as shown above. The two figures
-will be stored in the `results/` folder as the
-`traces_and_XY_templates.png` and `traces_and_XY_templates_EMadj.png`
-files.
+This generates the before-and-after plots (a) and (b) from Figure 5,
+stored in the `results/` folder as
+`traces_and_XY_templates.png` and `traces_and_XY_templates_EMadj.png`.
 
 If you want to see the effect of EM template adjustment on a lower-leakage
 intermediate variable (iv), modify the command line options for the script:
 ```
 $ julia --project scripts/figure_emadj_templates.jl --variable X --output results/traces_and_X_templates.png
 ```
-You should now see the two new figures: `traces_and_X_templates.png` and
-`traces_and_X_templates_EMadj.png`, also in the `results/` folder, similar
-to the ones shown below.
+You should now see plots (c) and (d) from Figure 5 in
+`traces_and_X_templates.png` and `traces_and_X_templates_EMadj.png`,
+also in the `results/` folder, similar to the ones shown below.
 ![EM adjustment X](scripts/EMAdjustmentFigures2.png)
