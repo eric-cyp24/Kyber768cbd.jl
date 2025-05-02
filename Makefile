@@ -101,27 +101,27 @@ MS2_test_E_results = \
 
 
 # this profiling and attack run requires about 25 GB file space (not counting JULIA_DEPOT_PATH)
-#option_1: instantiate downloaddata profiling attack results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
-option_1: instantiate
-	julia --project scripts/downloaddata.jl
-	julia --project scripts/profiling_kyber768cbd.jl
-	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
-	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
-	$(MAKE) results/SuccessRateTables.png
-	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
+option_1: instantiate downloaddata profiling attack results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
+#option_1: instantiate
+#	julia --project scripts/downloaddata.jl
+#	julia --project scripts/profiling_kyber768cbd.jl
+#	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
+#	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+#	$(MAKE) results/SuccessRateTables.png
+#	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
 
 # more thrifty download and deletion order, requires only about 12 GB file space
-#option_2: instantiate profiling delete_profiling_dataset attack results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
-option_2: instantiate
-	julia --project scripts/downloaddata.jl --profiling
-	julia --project scripts/profiling_kyber768cbd.jl
-	julia --project scripts/deletedata.jl --profiling
-	julia --project scripts/downloaddata.jl --attack
-	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
-	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
-	$(MAKE) results/SuccessRateTables.png
-	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
-	julia --project scripts/deletedata.jl --attack
+option_2: instantiate profiling delete_profiling_dataset attack results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png delete_attack_dataset
+#option_2: instantiate
+#	julia --project scripts/downloaddata.jl --profiling
+#	julia --project scripts/profiling_kyber768cbd.jl
+#	julia --project scripts/deletedata.jl --profiling
+#	julia --project scripts/downloaddata.jl --attack
+#	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl
+#	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+#	$(MAKE) results/SuccessRateTables.png
+#	$(MAKE) results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
+#	julia --project scripts/deletedata.jl --attack
 
 
 # install and precompile all Julia dependencies of this project
@@ -167,6 +167,9 @@ $(MS2_test_E_results): scripts/attack_kyber768cbd_Buf_singletrace.jl $(prebuilt_
 			$(MS2_test_E_DIR)traces_test_E_lanczos2_25_proc.h5 \
 			$(MS2_test_E_DIR)S_test_E_proc.h5 $(MS2_test_E_DIR)Buf_test_E_proc.h5
 	julia --project $(THREADOPT) scripts/attack_kyber768cbd_Buf_singletrace.jl --targetOP Encaps
+
+delete_attack_dataset: scripts/deletedata.jl scripts/Traces-Os-pub-attack-checksum.h5
+	julia --project scripts/deletedata.jl --attack
 
 
 # rules for building the tables and figures
