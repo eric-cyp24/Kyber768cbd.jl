@@ -101,7 +101,7 @@ MS2_test_E_results = \
 
 
 # this profiling and attack run requires about 25 GB file space (not counting JULIA_DEPOT_PATH)
-option_1: instantiate downloaddata profiling attack results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
+option_1: instantiate results/SuccessRateTables.png results/EMAdjustmentFigures1.png results/EMAdjustmentFigures2.png
 #option_1: instantiate
 #	julia --project scripts/downloaddata.jl
 #	julia --project scripts/profiling_kyber768cbd.jl
