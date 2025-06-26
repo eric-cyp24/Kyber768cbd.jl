@@ -38,7 +38,7 @@ function Cross_Device_Attack(Templateidx::Symbol, Targetidx::Symbol, postfix::Ab
     tBuf = begin
         TemplateDir = Templateidx in deviceslist ? tplDir[Templateidx] : pooledDir(devicespools[Templateidx])
         TemplateDIR = joinpath(TracesDIR, TemplateDir , "lanczos2_25/", "Templates_POIe$(POIe_left)-$(POIe_right)/")
-        loadTemplates(TemplateDIR, :Buf; nicvth=bufnicvth, POIe_left, POIe_right)
+        loadTemplates(TemplateDIR, :Buf; nicvth=bufnicvth, POIe_left, POIe_right, verbose=false)
     end
     tBuf_origin = EMadjust ? deepcopy(tBuf) : nothing
     println("Done!")

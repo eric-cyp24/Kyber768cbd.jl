@@ -11,10 +11,16 @@ function singletraceattacks(Traces::AbstractArray; tBuf=nothing, tXY=nothing, tX
     tIV = (1 .⊻ isnothing.((tBuf,tXY,tX,tY,tS)))
     if tIV == (1,0,0,0,0)
         return singletraceattacks_Buf(Traces, tBuf; S_true, showprogress)
+    elseif tIV == (0,1,0,0,0)
+        return singletraceattacks_XY(Traces, tXY; S_true, showprogress)
+    elseif tIV == (0,0,0,0,1)
+        return singletraceattacks_S(Traces, tS; S_true, showprogress)
+    elseif tIV == (1,0,1,1,1)
+        return singletraceattacks_Buf_X_Y_S(Traces, tBuf, tX, tY, tS; S_true, showprogress)
     end
 end
 
-#### Buf Template   ####
+#### Buf Template ####
 
 bufx1(buf) = (buf >> 0) & 0x3
 bufy1(buf) = (buf >> 2) & 0x3
@@ -54,7 +60,7 @@ function CBD_TA_margin_Buf(traces::AbstractMatrix, tBuf::Vector{Template}; prob:
 end
 
 """
-    singletraceattacks(Traces::AbstractArray, tBuf::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
+    singletraceattacks_Buf(Traces::AbstractArray, tBuf::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
 
 """
 function singletraceattacks_Buf(Traces::AbstractArray, tBuf::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
@@ -68,6 +74,154 @@ function singletraceattacks_Buf(Traces::AbstractArray, tBuf::Vector{Template}; S
         for (n,trace) in enumerate(eachslice(Traces,dims=3))
             showprogress && print(" ",n," -> ")
             push!(S_guess, CBD_TA_margin_Buf(trace, tBuf))
+            showprogress && print(S_guess[end]==view(S_true,:,n) ? "O\r" : "X\r")
+        end
+    end
+    return stack(S_guess)
+end
+
+#### XY Template ####
+
+fxy2s(xy)  = HW(xy &0x3) - HW((xy>>2)&0x3)
+
+function CBDmargin_XY(Pxy::AbstractVector; prob::Bool=false)
+    # Enum prob
+    s_prob = OffsetArray(zeros(5),-2:2)
+    for b in 0:15
+        s_prob[fxy2s(b)] += Pxy[b]
+    end
+    return prob ? s_prob./sum(s_prob) : argmax(s_prob)
+end
+
+function CBD_TA_margin_XY!(s_guess::AbstractVector, trace::AbstractVector, tXY::Vector{Template}; prob::Bool=false)
+    # Template Attack
+    XY_distributions = OffsetArray(reduce(hcat, [likelihoods(txy, trace) for txy in tXY]), 0:15, 1:16)
+
+    # Marginalize Probability
+    for i in 1:16
+        s_guess[i] = CBDmargin_XY(view(XY_distributions,:,i); prob)
+    end
+    return s_guess
+end
+function CBD_TA_margin_XY(traces::AbstractMatrix, tXY::Vector{Template}; prob::Bool=false)
+    s_guess = Vector{Int16}(undef, length(tXY)*size(traces,2))
+    @sync Threads.@threads for i in 1:size(traces,2)
+        @views CBD_TA_margin_XY!(s_guess[16*i-15:16*i], traces[:,i], tXY; prob)
+    end
+    return s_guess
+end
+
+"""
+    singletraceattacks_XY(Traces::AbstractArray, tXY::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
+
+"""
+function singletraceattacks_XY(Traces::AbstractArray, tXY::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
+    S_guess = []
+    if isempty(S_true)
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n,"  \r")
+            push!(S_guess, CBD_TA_margin_XY(trace, tXY))
+        end
+    else
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n," -> ")
+            push!(S_guess, CBD_TA_margin_XY(trace, tXY))
+            showprogress && print(S_guess[end]==view(S_true,:,n) ? "O\r" : "X\r")
+        end
+    end
+    return stack(S_guess)
+end
+
+#### S Template ####
+
+function CBD_TA_margin_S!(s_guess::AbstractVector, trace::AbstractVector, tS::Vector{Template}; prob::Bool=false)
+    # Template Attack
+    for i in 1:16
+        s_guess[i] = TemplateAttack.best_match(tS[i], trace) #CBDmargin_S(view(S_distributions,:,i); prob)
+    end
+    return s_guess
+end
+function CBD_TA_margin_S(traces::AbstractMatrix, tS::Vector{Template}; prob::Bool=false)
+    s_guess = Vector{Int16}(undef, length(tS)*size(traces,2))
+    @sync Threads.@threads for i in 1:size(traces,2)
+        @views CBD_TA_margin_S!(s_guess[16*i-15:16*i], traces[:,i], tS; prob)
+    end
+    return s_guess
+end
+
+"""
+    singletraceattacks_S(Traces::AbstractArray, tS::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
+
+"""
+function singletraceattacks_S(Traces::AbstractArray, tS::Vector{Template}; S_true::AbstractMatrix=[;;], showprogress::Bool=true)
+    S_guess = []
+    if isempty(S_true)
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n,"  \r")
+            push!(S_guess, CBD_TA_margin_S(trace, tS))
+        end
+    else
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n," -> ")
+            push!(S_guess, CBD_TA_margin_S(trace, tS))
+            showprogress && print(S_guess[end]==view(S_true,:,n) ? "O\r" : "X\r")
+        end
+    end
+    return stack(S_guess)
+end
+
+#### Buf X Y S Template ####
+
+function CBDmargin_Buf_X_Y_S(Pbuf::T, Px1::T, Py1::T, Ps1::T, Px2::T, Py2::T, Ps2::T; prob::Bool=false) where {T}
+    # Enum prob
+    s1_prob, s2_prob = OffsetArray(zeros(5),-2:2), OffsetArray(zeros(5),-2:2)
+    for b in 0:255
+        buf_prob = Pbuf[b] *Px1[bufx1(b)] *Py1[bufy1(b)] *Ps1[bufs1(b)] *Px2[bufx2(b)] *Py2[bufy2(b)] *Ps2[bufs2(b)]
+        s1_prob[bufs1(b)] += buf_prob
+        s2_prob[bufs2(b)] += buf_prob
+    end
+    return prob ? [s1_prob./sum(s1_prob), s2_prob./sum(s2_prob)] : [argmax(s1_prob),argmax(s2_prob)]
+end
+
+function CBD_TA_margin_Buf_X_Y_S!(s_guess::AbstractVector, trace::AbstractVector, tBuf::T, tX::T, tY::T, tS::T; prob::Bool=false) where {T}
+    # Template Attack
+    PBuf  = OffsetArray(reduce(hcat, [likelihoods(tbuf, trace) for tbuf in tBuf]), 0:255, 1:8 )
+    PX1   = OffsetArray(reduce(hcat, [likelihoods(tx,   trace) for tx   in view(tX,1:2:16) ]), 0:3, 1:8 )
+    PX2   = OffsetArray(reduce(hcat, [likelihoods(tx,   trace) for tx   in view(tX,2:2:16) ]), 0:3, 1:8 )
+    PY1   = OffsetArray(reduce(hcat, [likelihoods(ty,   trace) for ty   in view(tY,1:2:16) ]), 0:3, 1:8 )
+    PY2   = OffsetArray(reduce(hcat, [likelihoods(ty,   trace) for ty   in view(tY,2:2:16) ]), 0:3, 1:8 )
+    PS1   = OffsetArray(reduce(hcat, [likelihoods(ts,   trace) for ts   in view(tS,1:2:16) ]),-2:2, 1:8 )
+    PS2   = OffsetArray(reduce(hcat, [likelihoods(ts,   trace) for ts   in view(tS,2:2:16) ]),-2:2, 1:8 )
+
+    # Marginalize Probability
+    for i in 1:8
+        s_guess[2*i-1:2*i] .= @views CBDmargin_Buf_X_Y_S(PBuf[:,i],PX1[:,i],PY1[:,i],PS1[:,i],PX2[:,i],PY2[:,i],PS2[:,i]; prob)
+    end
+    return s_guess
+end
+function CBD_TA_margin_Buf_X_Y_S(traces::AbstractMatrix, tBuf::T, tX::T, tY::T, tS::T; prob::Bool=false) where {T}
+    s_guess = Vector{Int16}(undef, 2*length(tBuf)*size(traces,2))
+    @sync Threads.@threads for i in 1:size(traces,2)
+        @views CBD_TA_margin_Buf_X_Y_S!(s_guess[16*i-15:16*i], traces[:,i], tBuf, tX, tY, tS; prob)
+    end
+    return s_guess
+end
+
+"""
+    singletraceattacks_Buf_X_Y_S(Traces::AbstractArray, tBuf::T=[], tX::T=[], tY::T=[], tS::T=[]; S_true::AbstractMatrix=[;;], showprogress::Bool=true) where {T}
+
+"""
+function singletraceattacks_Buf_X_Y_S(Traces::AbstractArray, tBuf::T, tX::T, tY::T, tS::T; S_true::AbstractMatrix=[;;], showprogress::Bool=true) where {T}
+    S_guess = []
+    if isempty(S_true)
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n,"  \r")
+            push!(S_guess, CBD_TA_margin_Buf_X_Y_S(trace, tBuf, tX, tY, tS))
+        end
+    else
+        for (n,trace) in enumerate(eachslice(Traces,dims=3))
+            showprogress && print(" ",n," -> ")
+            push!(S_guess, CBD_TA_margin_Buf_X_Y_S(trace, tBuf, tX, tY, tS))
             showprogress && print(S_guess[end]==view(S_true,:,n) ? "O\r" : "X\r")
         end
     end
@@ -103,7 +257,7 @@ function loadTemplates(templateDir::AbstractString, iv::Symbol; nicvth, POIe_lef
 end
 function loadTemplates(templateDir::AbstractString, IVs::Vector{Symbol}; nicvth, bufnicvth, POIe_left, POIe_right, verbose=true)
     templateDir = normpath(templateDir)
-    verbose && println("loading templates from: ",templateDir)
+    verbose && println("\rloading templates from: ",templateDir)
     verbose && print("loading tempates of: ")
     IVtemplates = []
     for iv in IVs
@@ -136,6 +290,7 @@ end
 
 function writeTemplates(filepath::AbstractString, templates::Vector{Template}; group_path="Templates/", overwrite=false, compressed=false)
     if compressed
+        # doesn't duplicate TraceMean, TraceVar
         writeTemplates_compressed(filepath, templates; group_path, overwrite)
     else
         (overwrite && isfile(filepath)) && rm(filepath)

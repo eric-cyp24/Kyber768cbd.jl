@@ -76,7 +76,7 @@ function latextablewrapper(;part, caption="", label="")
     if part == :begin
         txtline  = "\\begin{table}[H]\n%\\centering\n"
         txtline *= "\\caption{$(caption)}$(isempty(label) ? "" : " \\label{$(label)}")\n"
-        txtline *= "\\begin{adjustbox}{width=1\\textwidth}\n"
+        txtline *= "\\begin{adjustbox}{max width=1\\textwidth}\n"
         txtline *= "\\begin{tabular}{V{4} c V{2} c|c|c|c|c|c|c|c||c|c|c|c|c|c|c|c V{4}}\n"
     elseif part == :end
         txtline  = "\\end{tabular}\n"
